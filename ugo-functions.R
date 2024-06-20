@@ -26,9 +26,17 @@ integrate(dUGo, 0, .25)
 qUGo<-function(u, mu=.5, sigma=1.2, tau=.5)
 {
   q<-(1 - (log(u) * (1 - mu^(-sigma)) / log(tau)))^(-1 / sigma)
-  return(q)
 }
 
 #u=pUGo(.2)
 #qUGo(u,mu=.5, sigma=1.2) 
 
+# INVERSION METHOD FOR RANDOM GENERATION
+
+rUGO <- function(n, mu=.5, sigma=1.2, tau=.5) {
+  u <- runif(n)
+  y <- (1 - (1 - mu^(-sigma)) / log(tau) * log(u))^(-1 / sigma)
+  return(y)
+}
+
+#rUGO(100)
