@@ -110,7 +110,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     }
     q_t <- linkinv(eta[(m+1):n])
     
-    ll <- llog(log(tau)/(1-mu^-sigma))+log(sigma)+
+    ll <- log(log(tau)/(1-mu^-sigma))+log(sigma)+
       (-1-sigma)*log(x)+(log(tau)/(1-mu^-sigma))*(1-x^-sigma)
     sum(ll)
   } 
