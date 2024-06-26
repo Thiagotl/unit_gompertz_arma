@@ -1,5 +1,5 @@
 
-uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0, 
+uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1, 
                       diag = 0, X = NA, X_hat = NA)
 {
   source("ugo-functions.R")
@@ -283,7 +283,7 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0,
   
   
   # Quantile residuals 
-  z$residuals <- as.vector(qnorm(cdf_UBXII(y[(m+1):n],z$fitted[(m+1):n],z$c_par)))  #mudar aqui
+  z$residuals <- as.vector(qnorm(pUGo(y[(m+1):n],z$fitted[(m+1):n],z$c_par)))  #mudar aqui
   residc <- z$residuals 
   
   # # GRAPHICS  ---- Comentar 
@@ -346,6 +346,8 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0,
   
 }
 
+
+uGoarma.fit(y)
 
 
 
