@@ -7,7 +7,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   # adicionar o teste lógico para a série temporal
   
   z<-c()
-  max_it1<-50
+  maxit1<-50
   p <- max(ar)
   q <- max(ma)
   n <- length(y)
@@ -100,23 +100,27 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     if(q1==0) theta = as.matrix(0) else  theta = as.matrix(z[(k+p1+2):(k+p1+q1+1)])
     c_par <- z[length(z)]
     
-    Xbeta <- X%*%beta
+    Xbeta <- X %*% beta
     Xbeta_ar <- suppressWarnings(matrix(Xbeta, (n-1), max(p, 1, na.rm = T)))
     
     for(i in (m+1):n)
     {
-      eta[i] <- alpha + Xbeta[i] + (ynew_ar[(i-1), ar] - Xbeta_ar[(i-1), ar])%*%phi + t(theta)%*%error[i-ma]
+      eta[i] <- alpha + Xbeta[i] + (ynew_ar[(i-1), ar] - Xbeta_ar[(i-1), ar]) %*% phi + t(theta) %*% error[i-ma]
       error[i] <- ynew[i] - eta[i] 
     }
     q_t <- linkinv(eta[(m+1):n])
     
-    ll <- log(log(tau)/(1-mu^-sigma))+log(sigma)+
-      (-1-sigma)*log(x)+(log(tau)/(1-mu^-sigma))*(1-x^-sigma)
+    mu <- q_t # Aqui definimos `mu` como os valores previstos
+    sigma <- 1 # ou qualquer outro valor apropriado
+    x <- y[(m+1):n]
+    
+    ll <- log(log(tau)/(1 - mu^-sigma)) + log(sigma) +
+      (-1 - sigma) * log(x) + (log(tau)/(1 - mu^-sigma)) * (1 - x^-sigma)
     sum(ll)
   } 
   
   opt<-optim(initial, loglik, 
-             escore.UBXIIarma, #mudar aqui
+            # escore.UBXIIarma, #mudar aqui
              method = "BFGS", hessian = TRUE,
              control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   
