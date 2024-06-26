@@ -1,4 +1,4 @@
-simu.ugoarma <- function(n,phi=NA,theta=NA, alpha=1,sigma=1,tau=0.5,freq=12,
+simu.ugoarma <- function(n,phi=0.2,theta=0.4, alpha=1,sigma=1, tau=0.5,freq=12,
                           link="logit")
 {
   source("ugo-functions.R")
@@ -55,6 +55,7 @@ simu.ugoarma <- function(n,phi=NA,theta=NA, alpha=1,sigma=1,tau=0.5,freq=12,
     {
       eta[i]  <- alpha + as.numeric(phi%*%ynew[i-ar]) 
       + as.numeric(theta%*%error[i-ma])
+      print(eta[i])
       mu[i]   <- linkinv(eta[i])
       y[i]    <- rUGO(1,mu[i]) #mudar aqui
       ynew[i] <- linkfun(y[i])
@@ -68,5 +69,5 @@ simu.ugoarma <- function(n,phi=NA,theta=NA, alpha=1,sigma=1,tau=0.5,freq=12,
 }
 
 
-simu.ugoarma(50)
+plot(simu.ugoarma(100))
 

@@ -2,7 +2,7 @@
 uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0, 
                       diag = 0, X = NA, X_hat = NA)
 {
-  source("ugo-functions.r")
+  source("ugo-functions.R")
   # adicionar o teste lógico para y
   # adicionar o teste lógico para a série temporal
   
@@ -10,7 +10,7 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0,
   max_it1<-50
   p <- max(ar)
   q <- max(ma)
-  n <- length(x)
+  n <- length(y)
   m <- max(p, q, na.rm = TRUE) 
   y1 <- y[(m+1):n]
   p1 <- length(ar)
@@ -44,7 +44,7 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0,
   linkinv = stats$linkinv 
   mu.eta = stats$mu.eta 
   diflink = function(t) 1/(stats$mu.eta(stats$linkfun(t)))
-  ynew = linkfun(y) 
+  ynew = linkfun(y) #g (y) avaliado em y - funcao de ligacao
   ynew_ar <- suppressWarnings(matrix(ynew,(n-1),max(p,1,na.rm=T)))
   
   
@@ -110,15 +110,13 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0,
     }
     q_t <- linkinv(eta[(m+1):n])
     
-    ll <- log(-c_par*log(tau))-log(y1)+(c_par-1)*log(log(1/y1))-
-      log(1+(log(1/y1))^c_par)-log(log(1+(log(1/q_t))^c_par))-
-      (log(1/tau)*log(1+(log(1/y1))^c_par))/
-      log(1+(log(1/q_t))^c_par)
+    ll <- llog(log(tau)/(1-mu^-sigma))+log(sigma)+
+      (-1-sigma)*log(x)+(log(tau)/(1-mu^-sigma))*(1-x^-sigma)
     sum(ll)
   } 
   
   opt<-optim(initial, loglik, 
-             escore.UBXIIarma, 
+             escore.UBXIIarma, #mudar aqui
              method = "BFGS", hessian = TRUE,
              control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   
@@ -285,69 +283,68 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 0,
   
   
   # Quantile residuals 
-  z$residuals <- as.vector(qnorm(cdf_UBXII(y[(m+1):n],z$fitted[(m+1):n],z$c_par)))
+  z$residuals <- as.vector(qnorm(cdf_UBXII(y[(m+1):n],z$fitted[(m+1):n],z$c_par)))  #mudar aqui
   residc <- z$residuals 
   
-  # GRAPHICS  ---- Comentar 
-  
-  if(diag>0)
-  {
-    
-    print(model_presentation)
-    print(" ",quote=F)
-    print(c("Log-likelihood:",round(z$loglik,4)),quote=F)
-    print(c("Number of iterations in BFGS optim:",z$counts),quote=F)
-    print(c("AIC:",round(z$aic,4)," SIC:",round(z$bic,4)," HQ:",round(z$hq,4)),quote=F)
-    
-    print("Residuals:",quote=F)
-    print(summary(residc))
-    
-    par(mfrow=c(1,1))
-    plot(y,type="l",ylab="Serie",xlab="Time",ylim=c(min(y),max(y)))
-    lines(z$fitted,col="blue",lty=2)
-    legend("topright",c("Observed data","Predicted median"),
-           pt.bg="white", lty=c(1,2), bty="n",col=c(1,"blue"))
-    
-    
-    w1<-5
-    h1<-4
-    
-    if(diag>1)
-    {
-      postscript(file = "resid_v_ind.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
-      {
-        par(mfrow=c(1,1))
-        par(mar=c(2.8, 2.7, 1, 1))
-        par(mgp=c(1.7, 0.45, 0))
-        plot(residc,main=" ",xlab="Index",ylab="Residuals", pch = "+",
-             ylim=c(-4,4))
-        lines(t,rep(-3,n+h+6),lty=2,col=1)
-        lines(t,rep(3,n+h+6),lty=2,col=1)
-        lines(t,rep(-2,n+h+6),lty=3,col=1)
-        lines(t,rep(2,n+h+6),lty=3,col=1)
-      }
-      dev.off()
-      
-      postscript(file = "adjusted.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
-      {
-        par(mfrow=c(1,1))
-        par(mar=c(2.8, 2.7, 1, 1))  
-        par(mgp=c(1.7, 0.45, 0))
-        plot(y,type="l",ylab="Serie",xlab="Time")
-        lines(z$fitted,col=2,lty=2)
-        legend("topright",c("Observed data","Predicted median"),
-               pt.bg="white", lty=c(1,2), bty="n",col=c(1,2), cex=.8)
-        
-      }
-      dev.off()
-      
-    }    
-  }  
-  
-  return(z)
+  # # GRAPHICS  ---- Comentar 
+  # 
+  # if(diag>0)
+  # {
+  #   
+  #   print(model_presentation)
+  #   print(" ",quote=F)
+  #   print(c("Log-likelihood:",round(z$loglik,4)),quote=F)
+  #   print(c("Number of iterations in BFGS optim:",z$counts),quote=F)
+  #   print(c("AIC:",round(z$aic,4)," SIC:",round(z$bic,4)," HQ:",round(z$hq,4)),quote=F)
+  #   
+  #   print("Residuals:",quote=F)
+  #   print(summary(residc))
+  #   
+  #   par(mfrow=c(1,1))
+  #   plot(y,type="l",ylab="Serie",xlab="Time",ylim=c(min(y),max(y)))
+  #   lines(z$fitted,col="blue",lty=2)
+  #   legend("topright",c("Observed data","Predicted median"),
+  #          pt.bg="white", lty=c(1,2), bty="n",col=c(1,"blue"))
+  #   
+  #   
+  #   w1<-5
+  #   h1<-4
+  #   
+  #   if(diag>1)
+  #   {
+  #     postscript(file = "resid_v_ind.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
+  #     {
+  #       par(mfrow=c(1,1))
+  #       par(mar=c(2.8, 2.7, 1, 1))
+  #       par(mgp=c(1.7, 0.45, 0))
+  #       plot(residc,main=" ",xlab="Index",ylab="Residuals", pch = "+",
+  #            ylim=c(-4,4))
+  #       lines(t,rep(-3,n+h+6),lty=2,col=1)
+  #       lines(t,rep(3,n+h+6),lty=2,col=1)
+  #       lines(t,rep(-2,n+h+6),lty=3,col=1)
+  #       lines(t,rep(2,n+h+6),lty=3,col=1)
+  #     }
+  #     dev.off()
+  #     
+  #     postscript(file = "adjusted.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
+  #     {
+  #       par(mfrow=c(1,1))
+  #       par(mar=c(2.8, 2.7, 1, 1))  
+  #       par(mgp=c(1.7, 0.45, 0))
+  #       plot(y,type="l",ylab="Serie",xlab="Time")
+  #       lines(z$fitted,col=2,lty=2)
+  #       legend("topright",c("Observed data","Predicted median"),
+  #              pt.bg="white", lty=c(1,2), bty="n",col=c(1,2), cex=.8)
+  #       
+  #     }
+  #     dev.off()
+  #     
+  #   }    
+  # }  
+  # 
+  # return(z)
   
 }
-
 
 
 
