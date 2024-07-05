@@ -3,3 +3,5 @@ x = série temporal a ser modelada, deve estar no intervalo entre 0 e 1
 X = matriz de covariaveis para o ajuste do modelo
 
 X_hat = matriz de covariáveis para previsão
+ 
+eta =  preditor linear ou função de ligação
