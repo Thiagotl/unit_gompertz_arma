@@ -1,4 +1,3 @@
-
 uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1, 
                       diag = 0, X = NA, X_hat = NA)
 {
@@ -30,7 +29,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
       linktemp <- eval(link)
     }
   }
-
+  
   valid_links<-c("logit", "probit", "cloglog")
   if (linktemp %in% valid_links) {
     stats <- make.link(linktemp)
@@ -98,20 +97,18 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     if(k==0)  beta = as.matrix(0) else beta = as.matrix(z[2:(k+1)])
     if(p1==0) {phi = as.matrix(0);ar=1} else phi = as.matrix(z[(k+2):(k+p1+1)]) 
     if(q1==0) theta = as.matrix(0) else  theta = as.matrix(z[(k+p1+2):(k+p1+q1+1)])
-    c_par <- z[length(z)]
+    sigma <- z[length(z)]
     
     Xbeta <- X %*% beta
     Xbeta_ar <- suppressWarnings(matrix(Xbeta, (n-1), max(p, 1, na.rm = T)))
     
     for(i in (m+1):n)
     {
-      eta[i] <- alpha + Xbeta[i] + (ynew_ar[(i-1), ar] - Xbeta_ar[(i-1), ar]) %*% phi + t(theta) %*% error[i-ma]
+      eta[i] <- alpha + Xbeta[i] + (ynew_ar[(i-1), ar] - Xbeta_ar[(i-1), ar]) %*% phi +
+        t(theta) %*% error[i-ma]
       error[i] <- ynew[i] - eta[i] 
     }
-    q_t <- linkinv(eta[(m+1):n])
-    
-    mu <- q_t # Aqui definimos `mu` como os valores previstos
-    sigma <- 1 # ou qualquer outro valor apropriado
+    mu <- linkinv(eta[(m+1):n])
     x <- y[(m+1):n]
     
     ll <- log(log(tau)/(1 - mu^-sigma)) + log(sigma) +
@@ -120,7 +117,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   } 
   
   opt<-optim(initial, loglik, 
-            # escore.UBXIIarma, #mudar aqui
+             # escore.UBXIIarma, #mudar aqui
              method = "BFGS", hessian = TRUE,
              control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   
@@ -145,9 +142,9 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   if(k==0) beta=names_beta=NULL else z$beta <- coef[2:(k+1)]
   if(p1==0) phi=names_phi=NULL else z$phi <- coef[(k+2):(k+p1+1)]
   if(q1==0) theta=names_theta=NULL else z$theta <- coef[(k+p1+2):(k+p1+q1+1)]
-  z$c_par <- coef[length(coef)]
+  z$sigma <- coef[length(coef)]
   
-  names_par <- c("alpha",names_beta,names_phi,names_theta,"c_par")
+  names_par <- c("alpha",names_beta,names_phi,names_theta,"sigma")
   names(coef)<-names_par
   z$coeff <- coef
   J_inv <- solve(-(opt$hessian))
@@ -192,12 +189,12 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     alpha <- as.numeric(coef[1])
     phi <- as.numeric(coef[2:(p1+1)])
     theta <- as.numeric(coef[(p1+2):(p1+q1+1)])
-    c_par <- as.numeric(coef[p1+q1+2])  
+    sigma <- as.numeric(coef[p1+q1+2])  
     
     z$alpha <- alpha
     z$phi <- phi
     z$theta <- theta
-    z$c_par <- c_par
+    z$sigma <- sigma
     
     errorhat<-rep(0,n) # E(error)=0 
     etahat<-rep(NA,n)
@@ -236,13 +233,13 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     beta <- as.numeric(coef[2:(k+1)])
     phi <- as.numeric(coef[(k+2):(k+p1+1)])
     theta <- as.numeric(coef[(k+p1+2):(k+p1+q1+1)])
-    c_par <- as.numeric(coef[length(coef)])  
+    sigma <- as.numeric(coef[length(coef)])  
     
     z$alpha <- alpha
     z$beta <- beta
     z$phi <- phi
     z$theta <- theta
-    z$c_par <- c_par
+    z$sigma <- sigma
     
     errorhat<-rep(0,n) # E(error)=0 
     etahat<-rep(NA,n)
@@ -287,7 +284,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   
   
   # Quantile residuals 
-  z$residuals <- as.vector(qnorm(pUGo(y[(m+1):n],z$fitted[(m+1):n],z$c_par)))  #mudar aqui
+  z$residuals <- as.vector(qnorm(pUGo(y[(m+1):n],z$fitted[(m+1):n],z$sigma)))  #mudar aqui
   residc <- z$residuals 
   
   # # GRAPHICS  ---- Comentar 
@@ -346,16 +343,18 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   #   }    
   # }  
   # 
-  # return(z)
+  return(z)
   
 }
 
+# set.seed(2)
 
-uGoarma.fit(y)
+y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
+                      link="logit")
 
+fit<-uGoarma.fit(y)
 
-
-
+fit$model
 
 
 
