@@ -71,5 +71,5 @@ simu.ugoarma <- function(n,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
 # 
 # plot(simu.ugoarma(100))
 # 
-y<-simu.ugoarma(10000)
-plot(simu.ugoarma(1000))
+#y<-simu.ugoarma(10000)
+#plot(simu.ugoarma(1000))

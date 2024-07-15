@@ -4,33 +4,36 @@ rm(list = ls())
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
+
+phi = 0.2 # AR
+theta = 0.4 # MA
 alpha = 1
-phi = 0.2
-theta = 0.4
 sigma = 6
 tau = 0.5
+true_values = c(1, 0.2, 0.4, 6)
 
-true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
-vn = c(70,150, 300, 500)#150, 300, 500
-R = 20
+# Tamanhos da amostra ajustados
+vn = c(30, 35, 40, 50) 
 z = 1.96
+R = 100
 
-# results = list()
-# coverage = list()
 
-for (n in vn) {
+set.seed(2024)
+
+for (n in vn){
   #matriz de resultados
   estim <-ICi<-ICs<- err <- matrix(NA, nrow = R, ncol = length(true_values))
   #contadores
-  calpha<-cphi<-ctheta<-csigma<-0 #para guardar os resultados
+  calpha<-cphi<-ctheta<-csigma<-0 # talvez preciso colocar o tau
   i<-0
   
-  for (i in 1:R) {
-    #print(c("i=",i))
+  for(i in 1:R){
+    
     y <- simu.ugoarma(n, phi = phi, theta = theta, alpha = alpha, sigma = sigma, tau = tau, freq = 12, link = "logit")
     fit1 <- uGoarma.fit(y)
     
-    
+    #i<-i+1
+    print(c("i=",i))
     
     estim[i,]<-fit1$model[,1]
     err[i,]<-fit1$model[,2]
@@ -39,7 +42,7 @@ for (n in vn) {
     ICi[i,]<-estim[i,]-(z*err[i,])
     ICs[i,]<-estim[i,]+ (z*err[i,])
     
-    if (ICi[i,1]<=alpha && ICs[i,1]>=alpha) 
+    if (ICi[i,1]<=alpha && ICi[i,1]>=alpha) 
     {
       calpha<-calpha+1
     }
@@ -79,10 +82,9 @@ for (n in vn) {
   ## final results
   results <- rbind(m, bias, biasP, erro, MSE,TC)
   rownames(results) <- c("Mean", "Bias","RB%", "SE", "MSE","TC")
-  colnames(results) <- c("alpha", "phi", "theta", "sigma")
   print(c("Tamanho da Amostra:",n))
   print(round(results,4))
   
+  
 }
-
 
