@@ -12,13 +12,13 @@ tau = 0.5
 
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
 vn = c(70,150, 300, 500)#150, 300, 500
-R = 20
+R = 10000
 z = 1.96
 
 # results = list()
 # coverage = list()
 
-for (n in vn) {
+for (n in vn){
   #matriz de resultados
   estim <-ICi<-ICs<- err <- matrix(NA, nrow = R, ncol = length(true_values))
   #contadores
@@ -28,9 +28,10 @@ for (n in vn) {
   for (i in 1:R) {
     #print(c("i=",i))
     y <- simu.ugoarma(n, phi = phi, theta = theta, alpha = alpha, sigma = sigma, tau = tau, freq = 12, link = "logit")
-    fit1 <- uGoarma.fit(y)
-    
-    
+    fit1 <- try(uGoarma.fit(y), silent = TRUE)
+    if(class(fit1)=="try-error" || fit1$conv !=0){
+      bug<-bug+1
+    }else{
     
     estim[i,]<-fit1$model[,1]
     err[i,]<-fit1$model[,2]
@@ -57,6 +58,7 @@ for (n in vn) {
     if (ICi[i,4]<=sigma && ICs[i,4]>=sigma) 
     {
       csigma<-csigma+1
+    }
     }
     
   }
