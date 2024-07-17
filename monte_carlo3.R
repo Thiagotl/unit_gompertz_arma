@@ -11,8 +11,8 @@ sigma = 6
 tau = 0.5
 
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
-vn = c(70, 150, 300, 500)#150, 300, 500
-R = 5000
+vn = c(1000,70)#70, 150, 300, 500
+R = 10000
 z = 1.96
 
 # results = list()

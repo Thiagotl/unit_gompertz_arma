@@ -9,7 +9,7 @@ theta = 0.4
 sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
-vn = c(1000,70) # 70,150, 300, 500
+vn = c(70, 150, 300, 500) # 70,150, 300, 500
 R = 10000
 z = 1.96
 
@@ -77,3 +77,4 @@ for (n in vn) {
   # Exibir avisos, se houver
   print(warnings())
 }
+
