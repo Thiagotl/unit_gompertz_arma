@@ -1,17 +1,23 @@
+# simu - ARMA(1,1)
+
 rm(list = ls())
 
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
 alpha = 1
-phi = 0.2
-theta = 0.4
+phi = 0.2 #AR
+theta = 0.4 #MA
 sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
-vn = c(1000,70) # 70,150, 300, 500
-R = 10000
+vn = c(70,150, 300, 500, 1000) # 70,150, 300, 500
+R = 10#000
 z = 1.96
+
+#ar1=NA
+#ma1=1
+
 
 for (n in vn) {
   # matriz de resultados
@@ -23,12 +29,12 @@ for (n in vn) {
   
   for (i in 1:R) {
     y <- simu.ugoarma(n, phi = phi, theta = theta, alpha = alpha, sigma = sigma, tau = tau, freq = 12, link = "logit")
-    fit1 <- try(uGoarma.fit(y), silent = TRUE)
+    fit1 <- try(uGoarma.fit(y), silent = TRUE) #, ma=ma1, ar=ar1
     
     if (class(fit1) == "try-error" || fit1$conv != 0) {
       bug <- bug + 1
     } else {
-      estim[i, ] <- fit1$model[, 1]
+      estim[i, ] <- fit1$model[, 1] == length(true_values)
       err[i, ] <- fit1$model[, 2]
       
       if (!any(is.na(estim[i, ])) && !any(is.na(err[i, ]))) {
@@ -41,7 +47,7 @@ for (n in vn) {
         }
         
         if (ICi[i, 2] <= phi && ICs[i, 2] >= phi) {
-          cphi <- cphi + 1
+         cphi <- cphi + 1
         }
         
         if (ICi[i, 3] <= theta && ICs[i, 3] >= theta) {

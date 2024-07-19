@@ -1,3 +1,5 @@
+library(parallel)
+
 rm(list = ls())
 
 
@@ -11,7 +13,7 @@ sigma = 6
 tau = 0.5
 
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
-vn = c(1000,70)#70, 150, 300, 500
+vn = c(70, 150, 300, 500, 1000)#70, 150, 300, 500, 1000
 R = 10000
 z = 1.96
 

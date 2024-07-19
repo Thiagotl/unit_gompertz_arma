@@ -349,12 +349,12 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
 
 # set.seed(2)
 
-y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
-                      link="logit")
-
-fit<-uGoarma.fit(y)
-
-fit$model
+# y<-simu.ugoarma(100,phi=NA,theta=0.2, alpha=1,sigma=6, tau=0.5,freq=12,
+#                       link="logit")
+# 
+# fit<-uGoarma.fit(y, ma=1, ar=NA)
+# 
+# fit$model
 
 
 
