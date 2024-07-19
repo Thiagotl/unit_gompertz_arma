@@ -12,7 +12,7 @@ sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
 vn = c(70,150, 300, 500, 1000) # 70,150, 300, 500
-R = 10#000
+R = 10000
 z = 1.96
 
 #ar1=NA
