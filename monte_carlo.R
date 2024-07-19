@@ -34,7 +34,7 @@ for (n in vn) {
     if (class(fit1) == "try-error" || fit1$conv != 0) {
       bug <- bug + 1
     } else {
-      estim[i, ] <- fit1$model[, 1] == length(true_values)
+      estim[i, ] <- fit1$model[, 1] 
       err[i, ] <- fit1$model[, 2]
       
       if (!any(is.na(estim[i, ])) && !any(is.na(err[i, ]))) {
