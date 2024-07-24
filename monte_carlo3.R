@@ -11,7 +11,7 @@ theta = 0.4 #MA
 sigma = 6
 tau = 0.5
 true_values = c(1, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
-vn = c(70,150, 300, 500, 1000) # 70,150, 300, 500
+vn = c(1000, 70) # 70,150, 300, 500
 R = 10000
 z = 1.96
 
