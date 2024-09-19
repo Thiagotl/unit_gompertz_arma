@@ -217,19 +217,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   z$loglik <- opt$value
   z$counts <- as.numeric(opt$counts[1])
   
-  # if(any(is.na(X)==F))
-  # {
-  #   z$k<- (p1+q1+k+2)
-  #   z$aic <- -2*(z$loglik*(n/(n-m)))+2*(z$k)
-  #   z$bic <- -2*(z$loglik*(n/(n-m)))+log(n)*(z$k)
-  #   z$hq <- -2*(z$loglik*(n/(n-m)))+log(log(n))*(z$k)
-  # }else{
-  #   z$k<- (p1+q1+2)
-  #   z$aic <- -2*(z$loglik*(n/(n-m)))+2*(z$k)
-  #   z$bic <- -2*(z$loglik*(n/(n-m)))+log(n)*(z$k)
-  #   z$hq <- -2*(z$loglik*(n/(n-m)))+log(log(n))*(z$k)
-  # }
-  
+
   if(any(is.na(X)==F))
   {
     z$k<- (p1+q1+k+2)
@@ -414,14 +402,15 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
 
 # PARA TESTAR 
 
-# set.seed(2)
+set.seed(2)
 
-# y<-simu.ugoarma(100,phi=NA,theta=0.2, alpha=1,sigma=6, tau=0.5,freq=12,
-#                       link="logit")
-# 
-# fit<-uGoarma.fit(y, ma=1, ar=NA)
-# 
-# fit$model
+source("simu.ugoarma.R")
+
+y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
+
+fit<-uGoarma.fit(y, ma=1, ar=1)
+
+fit$model
 
 
 
