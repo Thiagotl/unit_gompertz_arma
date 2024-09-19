@@ -115,7 +115,70 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
       (-1 - sigma) * log(x) + (log(tau)/(1 - mu^-sigma)) * (1 - x^-sigma)
     sum(ll)
   } 
+  #############################################################################
   
+  
+  escore.UBXIIarma <- function(z)
+  {
+    alpha <- z[1]
+    if(k==0)  beta = as.matrix(0) else beta = as.matrix(z[2:(k+1)])
+    if(p1==0) {phi = as.matrix(0);ar=1} else phi = as.matrix(z[(k+2):(k+p1+1)]) 
+    if(q1==0) theta = as.matrix(0) else  theta = as.matrix(z[(k+p1+2):(k+p1+q1+1)])
+    c_par <- z[length(z)]
+    
+    Xbeta <- X%*%beta
+    Xbeta_ar <- suppressWarnings(matrix(Xbeta, (n-1), max(p, 1, na.rm = T)))
+    for(i in (m+1):n)
+    {
+      eta[i] <- alpha + Xbeta[i] + (ynew_ar[(i-1),ar] - Xbeta_ar[(i-1),ar])%*%phi + t(theta)%*%error[i-ma]
+      error[i] <- ynew[i] - eta[i] 
+    }
+    
+    q_t <- linkinv(eta[(m+1):n])
+    
+    Xbeta <- X%*%beta
+    for(i in 1:(n-m)){
+      R[i,] <- error[i+m-ma]*k_i}
+    
+    for(i in (m+1):n)
+    {
+      deta.dalpha[i] <- 1 - deta.dalpha[i-ma]%*%theta
+      deta.dbeta[i,] <- X[i,] - t(phi)%*%X[i-ar,] - t(theta)%*%deta.dbeta[i-ma,]
+      deta.dphi[i,] <- ynew_ar[i-ar]- Xbeta[i-ar] - t(theta)%*%deta.dphi[i-ma,]
+      deta.dtheta[i,] <- R[(i-m),] - t(theta)%*%deta.dtheta[i-ma,]
+    }
+    
+    v <- deta.dalpha[(m+1):n]
+    rM <- deta.dbeta[(m+1):n,]
+    rP <- deta.dphi[(m+1):n,]
+    rR <- deta.dtheta[(m+1):n,]
+    
+    mT <- diag(mu.eta(eta[(m+1):n]))
+    
+    #ell_q
+   
+    
+    a_t <- -sigma*mu^(-sigma-1)/(1-mu^-sigma)-
+      log(tau)*(1-x^-sigma)*sigma*mu^(sigma-1)/(1-mu^sigma)^2
+      
+      
+    #ell_c_par
+    y_sust <- as.vector(1/sigma + log(mu) / (1 - mu^sigma) -log(x) +(mu^sigma * log(tau) * x^(-sigma) * 
+                                                                       ((mu^sigma - 1) * log(x) - log(mu) * (x^sigma - 1))) / (mu^sigma - 1)^2)
+    
+    Ualpha <- t(v) %*% mT %*% a_t
+    Ubeta <- t(rM) %*% mT %*% a_t
+    Uphi <-   t(rP) %*% mT %*% a_t
+    Utheta <- t(rR) %*% mT %*% a_t
+    Uc <- sum(y_sust)
+    
+    rval <- c(Ualpha,Ubeta,Uphi,Utheta,Uc)
+    return(rval[rval!=0])
+  }
+  
+  
+  ##############################################################################
+  #ATENCAO AQUI
   opt<-optim(initial, loglik, 
              # escore.UBXIIarma, #mudar aqui
              method = "BFGS", hessian = TRUE,
@@ -346,6 +409,10 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   return(z)
   
 }
+
+
+
+# PARA TESTAR 
 
 # set.seed(2)
 

@@ -9,7 +9,7 @@ dUGo <- function(x, mu=.5, sigma=1.2, tau=.5)
   
 }
 
-integrate(dUGo,0,1) 
+integrate(dUGo,0.01, 0.99) 
 
 # CUMULATIVE DISTRIBUTION FUNCTION 
 
@@ -31,6 +31,7 @@ qUGo<-function(u, mu=.5, sigma=1.2, tau=.5)
 
 u=pUGo(.82)
 qUGo(u,mu=.5, sigma=1.2)
+
 
 # INVERSION METHOD FOR RANDOM GENERATION
 
