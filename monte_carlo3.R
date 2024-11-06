@@ -1,3 +1,6 @@
+
+#SIMULACOA DE MONTE CARLO ORIGINA
+
 # simu - ARMA(0,1) - apenas medias moveis
 
 rm(list = ls())
@@ -6,24 +9,25 @@ source("simu.ugoarma.R")
 source("ugo_fit.R")
 
 alpha = 1
-phi = NA #AR
+phi = 0.2 #AR
 theta = 0.4 #MA
 sigma = 6
 tau = 0.5
-true_values = c(1, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
-vn = c(1000, 70) # 70,150, 300, 500
+true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
+vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
 R = 10000
 z = 1.96
 
-ar1=NA
+ar1=1
 ma1=1
 
+system.time({
 
 for (n in vn) {
   # matriz de resultados
   estim <- ICi <- ICs <- err <- matrix(NA, nrow = R, ncol = length(true_values))
   # contadores
-  calpha <-  ctheta <- csigma <- 0 # para guardar os resultados cphi <-
+  calpha <- cphi <- ctheta <- csigma <- 0 # para guardar os resultados cphi <-
   i <- 0
   bug <- 0 # inicializa o contador de bugs
   
@@ -49,15 +53,15 @@ for (n in vn) {
           calpha <- calpha + 1
         }
         
-        # if (ICi[i, 2] <= phi && ICs[i, 2] >= phi) {
-        #   cphi <- cphi + 1
-        # }
-        # 
-        if (ICi[i, 2] <= theta && ICs[i, 2] >= theta) {
+        if (ICi[i, 2] <= phi && ICs[i, 2] >= phi) {
+          cphi <- cphi + 1
+        }
+
+        if (ICi[i, 3] <= theta && ICs[i, 3] >= theta) {
           ctheta <- ctheta + 1
         }
         
-        if (ICi[i, 3] <= sigma && ICs[i, 3] >= sigma) {
+        if (ICi[i, 4] <= sigma && ICs[i, 4] >= sigma) {
           csigma <- csigma + 1
         }
       }
@@ -80,14 +84,16 @@ for (n in vn) {
   ### MSE
   MSE <- apply(estim, 2, var, na.rm = TRUE) + bias^2
   ###
-  TC <- c(calpha, ctheta, csigma) / R #, cphi
+  TC <- c(calpha, cphi, ctheta, csigma) / R #, cphi
   ## final results
   results <- rbind(m, bias, biasP, erro, MSE, TC)
   rownames(results) <- c("Mean", "Bias", "RB%", "SE", "MSE", "TC")
-  colnames(results) <- c("alpha", "theta", "sigma") #, "phi"
+  colnames(results) <- c("alpha","phi", "theta", "sigma")
   print(c("Tamanho da Amostra:", n))
   print(round(results, 4))
   
   # Exibir avisos, se houver
   print(warnings())
 }
+  
+})  
