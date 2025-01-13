@@ -1,4 +1,7 @@
-# simu - ARMA(1,1)
+
+#SIMULACOA DE MONTE CARLO ORIGINAL
+
+# simu - ARMA(1,1) - apenas medias moveis
 
 rm(list = ls())
 
@@ -10,27 +13,32 @@ phi = 0.2 #AR
 theta = 0.4 #MA
 sigma = 6
 tau = 0.5
-true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma
-vn = c(70,150, 300, 500, 1000) # 70,150, 300, 500
-R = 100
+true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
+vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
+R = 10000
 z = 1.96
 
-#ar1=NA
-#ma1=1
+ar1=1
+ma1=1
 
+start_time <- Sys.time()
 
 system.time({
-  for (n in vn) {
+
+for (n in vn) {
   # matriz de resultados
   estim <- ICi <- ICs <- err <- matrix(NA, nrow = R, ncol = length(true_values))
   # contadores
-  calpha <- cphi <- ctheta <- csigma <- 0 # para guardar os resultados
+  calpha <- cphi <- ctheta <- csigma <- 0 # para guardar os resultados cphi <-
   i <- 0
   bug <- 0 # inicializa o contador de bugs
   
+  # Inicializa a barra de progresso
+  pb <- txtProgressBar(min = 0, max = R, style = 3)
+  
   for (i in 1:R) {
     y <- simu.ugoarma(n, phi = phi, theta = theta, alpha = alpha, sigma = sigma, tau = tau, freq = 12, link = "logit")
-    fit1 <- try(uGoarma.fit(y), silent = TRUE) #, ma=ma1, ar=ar1
+    fit1 <- try(uGoarma.fit(y, ma=ma1, ar=ar1), silent = TRUE) #, ma=ma1, ar=ar1
     
     if (class(fit1) == "try-error" || fit1$conv != 0) {
       bug <- bug + 1
@@ -48,9 +56,9 @@ system.time({
         }
         
         if (ICi[i, 2] <= phi && ICs[i, 2] >= phi) {
-         cphi <- cphi + 1
+          cphi <- cphi + 1
         }
-        
+
         if (ICi[i, 3] <= theta && ICs[i, 3] >= theta) {
           ctheta <- ctheta + 1
         }
@@ -60,7 +68,12 @@ system.time({
         }
       }
     }
+    # Atualiza a barra de progresso
+    setTxtProgressBar(pb, i)
   }
+  
+  # Fecha a barra de progresso
+  close(pb)
   
   ### mean
   m <- apply(estim, 2, mean, na.rm = TRUE)
@@ -73,16 +86,24 @@ system.time({
   ### MSE
   MSE <- apply(estim, 2, var, na.rm = TRUE) + bias^2
   ###
-  TC <- c(calpha, cphi, ctheta, csigma) / R
+  TC <- c(calpha, cphi, ctheta, csigma) / R #, cphi
   ## final results
   results <- rbind(m, bias, biasP, erro, MSE, TC)
   rownames(results) <- c("Mean", "Bias", "RB%", "SE", "MSE", "TC")
-  colnames(results) <- c("alpha", "phi", "theta", "sigma")
+  colnames(results) <- c("alpha","phi", "theta", "sigma")
   print(c("Tamanho da Amostra:", n))
   print(round(results, 4))
   
   # Exibir avisos, se houver
   print(warnings())
 }
-
+  
 })  
+
+
+#end_time <- Sys.time()
+
+# Calcula e imprime o tempo total de execução
+execution_time <- end_time - start_time
+print(paste("Tempo total de execução:", round(as.numeric(execution_time, units = "secs")), "segundos"))
+
