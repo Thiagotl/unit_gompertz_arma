@@ -141,6 +141,8 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
       error[i] <- ynew[i] - eta[i] 
     }
     
+    sigma <- z[length(z)]
+    
     q_t <- linkinv(eta[(m+1):n])
     
     Xbeta <- X%*%beta
@@ -163,8 +165,6 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     mT <- diag(mu.eta(eta[(m+1):n]))
    
 
-    
-  
     #ell_q
     
     a_t <- -sigma*mu^(-sigma-1)/(1-mu^-sigma)-log(tau)*(1-x^-sigma)*sigma*mu^(sigma-1)/(1-mu^sigma)^2
@@ -188,7 +188,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   ##############################################################################
   #ATENCAO AQUI - USO DO VETOR SCORE
   opt<-optim(initial, loglik,
-             escore.UGoarma ,# escore.UBXIIarma, #mudar aqui
+             escore.UGoarma , #mudar aqui
              method = "BFGS", hessian = TRUE,
              control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   # opt <- optim(
