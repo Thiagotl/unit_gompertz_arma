@@ -189,20 +189,12 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   
   ##############################################################################
   #ATENCAO AQUI - USO DO VETOR SCORE
-  # opt<-optim(initial, loglik,
-  #            escore.UGoarma , #mudar aqui
-  #            method = "BFGS", hessian = TRUE,
-  #            control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
+  opt<-optim(initial, loglik,
+             escore.UGoarma , #mudar aqui
+             method = "BFGS", hessian = TRUE,
+             control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   
-  opt <- optim(
-    initial,
-    fn = loglik,
-    gr = escore.UGoarma,
-    method = "L-BFGS-B",
-    lower = c(rep(-Inf, length(initial)-1), 1e-6),
-    upper = rep(Inf, length(initial)),
-    control = list(fnscale = -1, maxit = 1000, reltol = 1e-12)
-  )
+  
   
   if (opt$conv != 0)
   {
@@ -421,15 +413,15 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
 
 # PARA TESTAR 
 
-set.seed(2)
-
-source("simu.ugoarma.R")
-
-y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
-
-fit<-uGoarma.fit(y, ma=1, ar=1)
-
-fit$model
+# set.seed(2)
+# 
+# source("simu.ugoarma.R")
+# 
+# y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
+# 
+# fit<-uGoarma.fit(y, ma=1, ar=1)
+# 
+# fit$model
 
 
 

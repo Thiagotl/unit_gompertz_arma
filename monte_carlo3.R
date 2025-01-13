@@ -15,7 +15,7 @@ sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
 vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
-R = 3000
+R = 10000
 z = 1.96
 
 ar1=1
@@ -101,7 +101,7 @@ for (n in vn) {
 })  
 
 
-end_time <- Sys.time()
+#end_time <- Sys.time()
 
 # Calcula e imprime o tempo total de execução
 execution_time <- end_time - start_time
