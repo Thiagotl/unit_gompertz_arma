@@ -95,6 +95,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   initial <- c(rep(0, k+p1+q1+1),1)
   initial[1 : (k+p1+1)] <- ols
   
+  
   loglik <- function(z) 
   {
     alpha <- z[1]
@@ -102,6 +103,8 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     if(p1==0) {phi = as.matrix(0);ar=1} else phi = as.matrix(z[(k+2):(k+p1+1)]) 
     if(q1==0) theta = as.matrix(0) else  theta = as.matrix(z[(k+p1+2):(k+p1+q1+1)])
     sigma <- z[length(z)]
+    
+    #if (is.na(sigma) || sigma <= 0) stop("problemas com sigma") 
     
     Xbeta <- X %*% beta
     Xbeta_ar <- suppressWarnings(matrix(Xbeta, (n-1), max(p, 1, na.rm = T)))
@@ -184,11 +187,21 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   
   ##############################################################################
   #ATENCAO AQUI - USO DO VETOR SCORE
-  opt<-optim(initial, loglik, 
+  opt<-optim(initial, loglik,
              escore.UGoarma ,# escore.UBXIIarma, #mudar aqui
              method = "BFGS", hessian = TRUE,
              control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
-  
+  # opt <- optim(
+  #   initial,
+  #   loglik,
+  #   escore.UGoarma,
+  #   method = "L-BFGS-B",
+  #   lower = c(rep(-Inf, length(initial) - 1), 1e-8),  # Define limite inferior para sigma
+  #   upper = rep(Inf, length(initial)),
+  #   hessian = TRUE,
+  #   control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12)
+  # )
+  # 
   
   if (opt$conv != 0)
   {
