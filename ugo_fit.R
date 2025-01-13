@@ -189,21 +189,20 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   
   ##############################################################################
   #ATENCAO AQUI - USO DO VETOR SCORE
-  opt<-optim(initial, loglik,
-             escore.UGoarma , #mudar aqui
-             method = "BFGS", hessian = TRUE,
-             control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
-  # opt <- optim(
-  #   initial,
-  #   loglik,
-  #   escore.UGoarma,
-  #   method = "L-BFGS-B",
-  #   lower = c(rep(-Inf, length(initial) - 1), 1e-8),  # Define limite inferior para sigma
-  #   upper = rep(Inf, length(initial)),
-  #   hessian = TRUE,
-  #   control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12)
-  # )
-  # 
+  # opt<-optim(initial, loglik,
+  #            escore.UGoarma , #mudar aqui
+  #            method = "BFGS", hessian = TRUE,
+  #            control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
+  
+  opt <- optim(
+    initial,
+    fn = loglik,
+    gr = escore.UGoarma,
+    method = "L-BFGS-B",
+    lower = c(rep(-Inf, length(initial)-1), 1e-6),
+    upper = rep(Inf, length(initial)),
+    control = list(fnscale = -1, maxit = 1000, reltol = 1e-12)
+  )
   
   if (opt$conv != 0)
   {
