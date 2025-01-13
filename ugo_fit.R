@@ -141,9 +141,11 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
       error[i] <- ynew[i] - eta[i] 
     }
     
+    # TENHO QUE VERIFICAR 
     sigma <- z[length(z)]
-    
     q_t <- linkinv(eta[(m+1):n])
+    mu <- linkinv(eta[(m+1):n])
+    x  <- y[(m+1):n] 
     
     Xbeta <- X%*%beta
     for(i in 1:(n-m)){
