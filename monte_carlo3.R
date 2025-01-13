@@ -6,7 +6,7 @@
 rm(list = ls())
 
 source("simu.ugoarma.R")
-source("ugo_fit2.R")
+source("ugo_fit.R")
 
 alpha = 1
 phi = 0.2 #AR
@@ -15,7 +15,7 @@ sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
 vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
-R = 2000
+R = 3000
 z = 1.96
 
 ar1=1

@@ -131,7 +131,7 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     if(k==0)  beta = as.matrix(0) else beta = as.matrix(z[2:(k+1)])
     if(p1==0) {phi = as.matrix(0);ar=1} else phi = as.matrix(z[(k+2):(k+p1+1)]) 
     if(q1==0) theta = as.matrix(0) else  theta = as.matrix(z[(k+p1+2):(k+p1+q1+1)])
-    c_par <- z[length(z)]
+    #c_par <- z[length(z)]
     
     Xbeta <- X%*%beta
     Xbeta_ar <- suppressWarnings(matrix(Xbeta, (n-1), max(p, 1, na.rm = T)))
@@ -142,11 +142,11 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     }
     
     # TENHO QUE VERIFICAR 
-    # sigma <- z[length(z)]
+    sigma <- z[length(z)]
     # q_t <- linkinv(eta[(m+1):n])
-    # mu <- linkinv(eta[(m+1):n])
+    mu <- linkinv(eta[(m+1):n])
     # x  <- y[(m+1):n] 
-    
+    x<-y1
     Xbeta <- X%*%beta
     for(i in 1:(n-m)){
       R[i,] <- error[i+m-ma]*k_i}
