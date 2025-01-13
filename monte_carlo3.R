@@ -1,7 +1,7 @@
 
-#SIMULACOA DE MONTE CARLO ORIGINA
+#SIMULACOA DE MONTE CARLO ORIGINAL
 
-# simu - ARMA(0,1) - apenas medias moveis
+# simu - ARMA(1,1) - apenas medias moveis
 
 rm(list = ls())
 
@@ -15,11 +15,13 @@ sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
 vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
-R = 10000
+R = 5000
 z = 1.96
 
 ar1=1
 ma1=1
+
+start_time <- Sys.time()
 
 system.time({
 
@@ -97,3 +99,11 @@ for (n in vn) {
 }
   
 })  
+
+
+end_time <- Sys.time()
+
+# Calcula e imprime o tempo total de execução
+execution_time <- end_time - start_time
+print(paste("Tempo total de execução:", round(as.numeric(execution_time, units = "secs")), "segundos"))
+

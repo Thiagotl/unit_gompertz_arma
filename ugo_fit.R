@@ -1,3 +1,7 @@
+
+rm(list = ls())
+
+
 uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1, 
                       diag = 0, X = NA, X_hat = NA)
 {
@@ -117,8 +121,8 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   } 
   #############################################################################
   
-  
-  escore.UBXIIarma <- function(z)
+  # VETOR SCORE 
+  escore.UGoarma <- function(z)
   {
     alpha <- z[1]
     if(k==0)  beta = as.matrix(0) else beta = as.matrix(z[2:(k+1)])
@@ -154,12 +158,13 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
     rR <- deta.dtheta[(m+1):n,]
     
     mT <- diag(mu.eta(eta[(m+1):n]))
-    
-    #ell_q
    
+
     
-    a_t <- -sigma*mu^(-sigma-1)/(1-mu^-sigma)-
-      log(tau)*(1-x^-sigma)*sigma*mu^(sigma-1)/(1-mu^sigma)^2
+  
+    #ell_q
+    
+    a_t <- -sigma*mu^(-sigma-1)/(1-mu^-sigma)-log(tau)*(1-x^-sigma)*sigma*mu^(sigma-1)/(1-mu^sigma)^2
       
       
     #ell_c_par
@@ -178,9 +183,9 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   
   
   ##############################################################################
-  #ATENCAO AQUI
+  #ATENCAO AQUI - USO DO VETOR SCORE
   opt<-optim(initial, loglik, 
-             # escore.UBXIIarma, #mudar aqui
+             escore.UGoarma ,# escore.UBXIIarma, #mudar aqui
              method = "BFGS", hessian = TRUE,
              control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   

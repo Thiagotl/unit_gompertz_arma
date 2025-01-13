@@ -9,7 +9,7 @@ simu.ugoarma <- function(n,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
     ar<-0
     phi<-0
   }
-  
+
   if(any(is.na(theta)==F))
   {
     ma <- 1:length(theta)
@@ -17,7 +17,7 @@ simu.ugoarma <- function(n,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
     ma<-0
     theta<-0
   }
-  
+
   linktemp <- substitute(link)
   if (!is.character(linktemp))
   {
@@ -26,31 +26,31 @@ simu.ugoarma <- function(n,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
       linktemp <- eval(link)
   }
   if (any(linktemp == c("logit", "probit", "cloglog")))
-  {  
+  {
     stats <- make.link(linktemp)
   }else{
-    stop(paste(linktemp, "link not available, available links are \"logit\" 
+    stop(paste(linktemp, "link not available, available links are \"logit\"
                and \"cloglog\""))
-  } 
-  
-  link <- structure(list(link = linktemp, 
+  }
+
+  link <- structure(list(link = linktemp,
                          linkfun = stats$linkfun,
                          linkinv = stats$linkinv ))
-  
+
   linkfun <- link$linkfun
   linkinv <- link$linkinv
-  
+
   {
     p <- max(ar)
     q <- max(ma)
     m <- 2*max(p,q)
-    
+
     ynew <-rep(alpha,(n+m))
     mu <- linkinv(ynew)
-    
-    error<-rep(0,n+m) 
+
+    error<-rep(0,n+m)
     eta<- y <- rep(NA,n+m)
-    
+
     for(i in (m+1):(n+m))
     {
       eta[i]  <- alpha + as.numeric(phi%*%ynew[i-ar]) + as.numeric(theta%*%error[i-ma])
@@ -59,18 +59,101 @@ simu.ugoarma <- function(n,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,
       mu[i]   <- linkinv(eta[i])
       y[i]    <- rUGO(1,mu[i],sigma,tau) #mudar aqui
       ynew[i] <- linkfun(y[i])
-      error[i]<- ynew[i]-eta[i]   
-      
+      error[i]<- ynew[i]-eta[i]
+
     }
-    
-    
+
+
     return( ts(y[(m+1):(n+m)],frequency=freq) )
-  } 
+  }
 }
 
-# 
-# 
-plot(simu.ugoarma(100))
-# 
-#y<-simu.ugoarma(10000)
-#plot(simu.ugoarma(1000))
+
+# plot(simu.ugoarma(100))
+# y<-simu.ugoarma(10000)
+# plot(simu.ugoarma(1000))
+
+
+
+
+
+# simu.ugoarma <- function(n, phi = 0.2, theta = 0.4, alpha = 1, sigma = 6, tau = 0.5, freq = 12,
+#                          link = "logit") {
+#   source("ugo-functions.R")
+#   
+#   if (any(!is.na(phi))) {
+#     ar <- 1:length(phi)
+#   } else {
+#     ar <- 0
+#     phi <- 0
+#   }
+#   
+#   if (any(!is.na(theta))) {
+#     ma <- 1:length(theta)
+#   } else {
+#     ma <- 0
+#     theta <- 0
+#   }
+#   
+#   linktemp <- substitute(link)
+#   if (!is.character(linktemp)) {
+#     linktemp <- deparse(linktemp)
+#     if (linktemp == "link") {
+#       linktemp <- eval(link)
+#     }
+#   }
+#   if (any(linktemp == c("logit", "probit", "cloglog"))) {  
+#     stats <- make.link(linktemp)
+#   } else {
+#     stop(paste(linktemp, "link not available, available links are \"logit\" and \"cloglog\""))
+#   } 
+#   
+#   link <- structure(list(link = linktemp, 
+#                          linkfun = stats$linkfun,
+#                          linkinv = stats$linkinv))
+#   
+#   linkfun <- link$linkfun
+#   linkinv <- link$linkinv
+#   
+#   # Inicializa variáveis
+#   p <- max(ar)
+#   q <- max(ma)
+#   m <- 2 * max(p, q)
+#   
+#   ynew <- rep(alpha, (n + m))
+#   mu <- linkinv(ynew)
+#   error <- rep(0, n + m) 
+#   eta <- y <- rep(NA, n + m)
+#   
+#   for (i in (m + 1):(n + m)) {
+#     eta[i] <- alpha + as.numeric(phi %*% ynew[i - ar]) + as.numeric(theta %*% error[i - ma])
+#     mu[i] <- linkinv(eta[i])
+#     
+#     if (mu[i] <= 0 || mu[i] >= 1) {
+#       stop(paste("Mu fora do intervalo (0, 1) na iteração", i))
+#     }
+#     
+#     y[i] <- rUGO(1, mu[i], sigma, tau) # Geração de valores da distribuição UGO
+#     if (is.na(y[i]) || y[i] <= 0 || y[i] >= 1) {
+#       stop(paste("Y inválido gerado por rUGO na iteração", i))
+#     }
+#     
+#     ynew[i] <- linkfun(y[i])
+#     error[i] <- ynew[i] - eta[i]
+#   }
+#   
+#   # Retorna série temporal
+#   return(ts(y[(m + 1):(n + m)], frequency = freq))
+# }
+
+
+
+
+
+
+
+
+
+
+
+
