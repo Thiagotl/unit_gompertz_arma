@@ -101,7 +101,7 @@ for (n in vn) {
 })  
 
 
-#end_time <- Sys.time()
+end_time <- Sys.time()
 
 # Calcula e imprime o tempo total de execução
 execution_time <- end_time - start_time
