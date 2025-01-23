@@ -349,62 +349,62 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
   z$residuals <- as.vector(qnorm(pUGo(y[(m+1):n],z$fitted[(m+1):n],z$sigma)))  #mudar aqui
   residc <- z$residuals 
   
-  # # GRAPHICS  ---- Comentar 
-  # 
-  # if(diag>0)
-  # {
-  #   
-  #   print(model_presentation)
-  #   print(" ",quote=F)
-  #   print(c("Log-likelihood:",round(z$loglik,4)),quote=F)
-  #   print(c("Number of iterations in BFGS optim:",z$counts),quote=F)
-  #   print(c("AIC:",round(z$aic,4)," SIC:",round(z$bic,4)," HQ:",round(z$hq,4)),quote=F)
-  #   
-  #   print("Residuals:",quote=F)
-  #   print(summary(residc))
-  #   
-  #   par(mfrow=c(1,1))
-  #   plot(y,type="l",ylab="Serie",xlab="Time",ylim=c(min(y),max(y)))
-  #   lines(z$fitted,col="blue",lty=2)
-  #   legend("topright",c("Observed data","Predicted median"),
-  #          pt.bg="white", lty=c(1,2), bty="n",col=c(1,"blue"))
-  #   
-  #   
-  #   w1<-5
-  #   h1<-4
-  #   
-  #   if(diag>1)
-  #   {
-  #     postscript(file = "resid_v_ind.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
-  #     {
-  #       par(mfrow=c(1,1))
-  #       par(mar=c(2.8, 2.7, 1, 1))
-  #       par(mgp=c(1.7, 0.45, 0))
-  #       plot(residc,main=" ",xlab="Index",ylab="Residuals", pch = "+",
-  #            ylim=c(-4,4))
-  #       lines(t,rep(-3,n+h+6),lty=2,col=1)
-  #       lines(t,rep(3,n+h+6),lty=2,col=1)
-  #       lines(t,rep(-2,n+h+6),lty=3,col=1)
-  #       lines(t,rep(2,n+h+6),lty=3,col=1)
-  #     }
-  #     dev.off()
-  #     
-  #     postscript(file = "adjusted.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
-  #     {
-  #       par(mfrow=c(1,1))
-  #       par(mar=c(2.8, 2.7, 1, 1))  
-  #       par(mgp=c(1.7, 0.45, 0))
-  #       plot(y,type="l",ylab="Serie",xlab="Time")
-  #       lines(z$fitted,col=2,lty=2)
-  #       legend("topright",c("Observed data","Predicted median"),
-  #              pt.bg="white", lty=c(1,2), bty="n",col=c(1,2), cex=.8)
-  #       
-  #     }
-  #     dev.off()
-  #     
-  #   }    
-  # }  
-  # 
+  # GRAPHICS  ---- Comentar
+
+  if(diag>0)
+  {
+
+    print(model_presentation)
+    print(" ",quote=F)
+    print(c("Log-likelihood:",round(z$loglik,4)),quote=F)
+    print(c("Number of iterations in BFGS optim:",z$counts),quote=F)
+    print(c("AIC:",round(z$aic,4)," SIC:",round(z$bic,4)," HQ:",round(z$hq,4)),quote=F)
+
+    print("Residuals:",quote=F)
+    print(summary(residc))
+
+    par(mfrow=c(1,1))
+    plot(y,type="l",ylab="Serie",xlab="Time",ylim=c(min(y),max(y)))
+    lines(z$fitted,col="blue",lty=2)
+    legend("topright",c("Observed data","Predicted median"),
+           pt.bg="white", lty=c(1,2), bty="n",col=c(1,"blue"))
+
+
+    w1<-5
+    h1<-4
+
+    if(diag>1)
+    {
+      postscript(file = "resid_v_ind.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
+      {
+        par(mfrow=c(1,1))
+        par(mar=c(2.8, 2.7, 1, 1))
+        par(mgp=c(1.7, 0.45, 0))
+        plot(residc,main=" ",xlab="Index",ylab="Residuals", pch = "+",
+             ylim=c(-4,4))
+        lines(t,rep(-3,n+h+6),lty=2,col=1)
+        lines(t,rep(3,n+h+6),lty=2,col=1)
+        lines(t,rep(-2,n+h+6),lty=3,col=1)
+        lines(t,rep(2,n+h+6),lty=3,col=1)
+      }
+      dev.off()
+
+      postscript(file = "adjusted.eps",horizontal=F,paper="special",width = w1, height = h1,family = "Times")
+      {
+        par(mfrow=c(1,1))
+        par(mar=c(2.8, 2.7, 1, 1))
+        par(mgp=c(1.7, 0.45, 0))
+        plot(y,type="l",ylab="Serie",xlab="Time")
+        lines(z$fitted,col=2,lty=2)
+        legend("topright",c("Observed data","Predicted median"),
+               pt.bg="white", lty=c(1,2), bty="n",col=c(1,2), cex=.8)
+
+      }
+      dev.off()
+
+    }
+  }
+
   return(z)
   
 }
@@ -413,15 +413,15 @@ uGoarma.fit<-function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1,
 
 # PARA TESTAR 
 
-# set.seed(2)
+set.seed(2)
 # 
-# source("simu.ugoarma.R")
+source("simu.ugoarma.R")
 # 
-# y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
+y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
 # 
-# fit<-uGoarma.fit(y, ma=1, ar=1)
+fit<-uGoarma.fit(y, ma=1, ar=1, diag = 1)
 # 
-# fit$model
+fit$model
 
 
 
