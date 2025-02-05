@@ -15,7 +15,7 @@ sigma = 6
 tau = 0.5
 true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
 vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
-R = 10000
+R = 300
 z = 1.96
 
 ar1=1
@@ -24,8 +24,7 @@ ma1=1
 start_time <- Sys.time()
 
 system.time({
-
-for (n in vn) {
+  for (n in vn) {
   # matriz de resultados
   estim <- ICi <- ICs <- err <- matrix(NA, nrow = R, ncol = length(true_values))
   # contadores
