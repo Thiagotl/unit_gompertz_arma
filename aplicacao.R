@@ -126,7 +126,7 @@ X_hat = cbind(C_hat, S_hat, D_hat)  # Matriz de regressoras para teste
 
 
 p_ugoarma = 1:2
-q_ugoarma = 1
+q_ugoarma = 1:2
 
 fit_ugoarma = uGoarma.fit(y,
                           ar = p_ugoarma,
@@ -166,7 +166,7 @@ for (i in 1:nrow(test_data)) {
   # Ajustando o modelo UGOARMA a cada iteração
   fit_ugoarma = uGoarma.fit(y,
                             ar    = 1:2,
-                            ma    = NA,
+                            ma    = 1:2,
                             tau   = tau,
                             link  = "logit",
                             h     = i, 
