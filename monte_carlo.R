@@ -3,7 +3,7 @@
 
 # simu - ARMA(1,1) - apenas medias moveis
 
-rm(list = ls())
+#rm(list = ls())
 
 source("simu.ugoarma.R")
 source("ugo_fit.R")

@@ -2,7 +2,7 @@
 library(forecast)
 library(dplyr)
 library(BTSR)
-source("ubxiiarma.fit.r")
+#source("ubxiiarma.fit.r")
 source("ugo_fit.R")
 ######################
 ## Data preparation ##
@@ -98,8 +98,7 @@ for(i in 0:3){
     
     #ubxiiarma<-ubxiiarma.fit(ts(hum_test),ar=i,ma=i)
     
-    ugoarma<-uGoarma.fit(ts(hum_train),ar=i,ma=j)
-    
+    ugoarma<-uGoarma.fit(hum_train,ar=i,ma=j)
     
     
     barmax<-summary(BARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,

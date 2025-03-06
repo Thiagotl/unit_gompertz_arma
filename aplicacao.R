@@ -12,7 +12,7 @@ source("best_ugoarma.R")
 
 
 dados <- read_csv("EAR_southeast_may01-2000_aug31-2019.csv")
-View(dados)
+#View(dados)
 
 
 y1 <- dados$val_eaconsimp4/100
