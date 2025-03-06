@@ -1,8 +1,9 @@
-rm(list = ls())
+#rm(list = ls())
 library(forecast)
 library(dplyr)
 library(BTSR)
 source("ubxiiarma.fit.r")
+source("ugo_fit.R")
 ######################
 ## Data preparation ##
 ######################
@@ -80,7 +81,7 @@ new2<-Arima(hum_test,xreg = Xtest,model=a02) #one-step-ahead
 # xtable::xtable(lmtest::coeftest(a02)[,c(1,4)])
 # xtable::xtable(summary(uwarmax)$coefficients[,c(1,4)])
 quant<-.5
-order<-matrix(NA,16,8)
+order<-matrix(NA,nrow = 16, ncol = 9) 
 cont<-1
 for(i in 0:3){
   for(j in 0:3){
@@ -94,7 +95,13 @@ for(i in 0:3){
     uwarma1<-(UWARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,rho=quant,
                            report=F))
     uwarma<-summary(uwarma1)
-    # ubxiiarma<-ubxiiarma.fit(ts(hum_test),ar=i,ma=i)
+    
+    #ubxiiarma<-ubxiiarma.fit(ts(hum_test),ar=i,ma=i)
+    
+    ugoarma<-uGoarma.fit(ts(hum_train),ar=i,ma=j)
+    
+    
+    
     barmax<-summary(BARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,
                                 xreg = X,
                                 report=F))
@@ -112,12 +119,12 @@ for(i in 0:3){
     if(uwarmax1$convergence==1 || is.nan(uwarmax$aic)==1) uwarmax$aic=0
     #   print(c(karma1$convergence,karma$aic))
     order[cont,]<-c(i,j,barma$aic,karma$aic,uwarma$aic,
-                    barmax$aic,karmax$aic,uwarmax$aic)
+                    barmax$aic,karmax$aic,uwarmax$aic,ugoarma$aic)
     cont<-cont+1
   }
 }
 order<-order[-1,]
-# print(order)
+print(order)
 
 orbarma<-order[which(order[,3]==min(order[,3])),c(1:3)]
 orkarma<-order[which(order[,4]==min(order[,4])),c(1:2,4)]

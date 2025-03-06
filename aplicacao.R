@@ -1,14 +1,14 @@
 
 # APLICACAO 
 
-rm(list = ls()) 
+#rm(list = ls()) 
 
 library(tidyverse)
 library(e1071)
 
 source("ugo_fit.R")
 source("functions.R")
-
+source("best_ugoarma.R")
 
 
 dados <- read_csv("EAR_southeast_may01-2000_aug31-2019.csv")
@@ -123,6 +123,20 @@ D_hat = rep(1, h1)  # Supõe crise contínua nos próximos 10 meses de previsão
 
 X = cbind(C, S, D)   # Matriz de regressoras para treino
 X_hat = cbind(C_hat, S_hat, D_hat)  # Matriz de regressoras para teste
+
+
+# escolha do melhor modelo ARMA para UGO-ARMA
+
+pmax = 3
+qmax = 3
+
+ugo_best = best.ugo(y, sf = c(start = c(year,month),frequency = 12),
+                        h = h1, pmax = pmax, qmax = qmax,
+                        nbest = 10, tau = tau, link = "logit", X = X, X_hat = X_hat)
+
+
+
+
 
 
 p_ugoarma = 1:2

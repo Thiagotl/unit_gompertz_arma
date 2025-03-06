@@ -1,4 +1,4 @@
-rm(list = ls())
+#rm(list = ls())
 
 uGoarma.fit <- function(y, ar = 1, ma = 1, tau = .5, link = "logit", h = 1, 
                         diag = 0, X = NA, X_hat = NA)
