@@ -140,7 +140,7 @@ ugo_best = best.ugo(y, sf = c(start = c(year,month),frequency = 12),
 
 
 p_ugoarma = 1:2
-q_ugoarma = 1:2
+q_ugoarma = 2:3
 
 fit_ugoarma = uGoarma.fit(y,
                           ar = p_ugoarma,
@@ -161,6 +161,8 @@ pacf(fit_ugoarma$residuals)
 
 
 # PREVISAO FORA DA AMOSTRA 
+
+X_hat1 = cbind(C_hat,S_hat,D_hat)
 # Test sets
 test_data  = cbind(yh, X_hat)
 
@@ -172,9 +174,9 @@ for (i in 1:nrow(test_data)) {
   
   # Atualizando os regressores para o período de previsão
   if(i == 1){
-    X_hat_iter = t(as.matrix(X_hat[1:i,]))
+    X_hat = t(as.matrix(X_hat1[1:i,]))
   }else{
-    X_hat_iter = X_hat[1:i,]
+    X_hat = X_hat1[1:i,]
   }
   
   # Ajustando o modelo UGOARMA a cada iteração
@@ -186,7 +188,7 @@ for (i in 1:nrow(test_data)) {
                             h     = i, 
                             diag  = diag, 
                             X     = X,
-                            X_hat = X_hat_iter)
+                            X_hat = X_hat)
   
   # Armazenando previsões
   forecasts_ugoarma[i,1:i] = fit_ugoarma$forecast
@@ -232,6 +234,20 @@ legend("topright",
        bty = "n",
        col = c(1, "blue"))
 
+
+out_of_sample_forecast <- forecasts_ugoarma[h1, 1:h1]
+
+out_of_sample_forecast_ts <- ts(out_of_sample_forecast,
+                                start = c(end(y)[1], end(y)[2]+1), 
+                                frequency = 12)
+
+# Plotar série completa (treino + teste)
+plot(Y, main = "Previsão Fora da Amostra", xlab = "Tempo", ylab = "Energia")
+lines(out_of_sample_forecast_ts, col = "red", lty = 2)
+#points(yh, col = "blue", pch = 16)  # valores reais de teste
+legend("topright", 
+       legend = c("Observado", "Previsto"), 
+       col = c("black", "red"), lty = c(1,2), bty = "n")
 
 
 

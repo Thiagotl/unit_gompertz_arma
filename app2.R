@@ -10,7 +10,7 @@
 # Equipamentos de Controle de Reativos da Rede de Operação
 # Fator de Capacidade de Geração Eólica e Solar
 
-rm(list = ls())
+#rm(list = ls())
 library(forecast)
 library(dplyr)
 library(BTSR)
@@ -20,7 +20,7 @@ source("ugo_fit.R")
 source("functions.R")
 
 dados <- read_csv("EAR_southeast_may01-2000_aug31-2019.csv")
-View(dados)
+#View(dados)
 
 y1 <- dados$val_eaconsimp4/100
 y1
