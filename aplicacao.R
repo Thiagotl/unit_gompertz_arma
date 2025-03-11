@@ -168,7 +168,7 @@ test_data  = cbind(yh, X_hat)
 
 # Criando matriz para armazenar previsões
 forecasts_ugoarma = matrix(NA, nrow = 10, ncol = 10)
-diag = 0
+diag = 1
 
 for (i in 1:nrow(test_data)) {
   

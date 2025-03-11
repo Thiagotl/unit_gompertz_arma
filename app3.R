@@ -81,7 +81,7 @@ new2<-Arima(hum_test,xreg = Xtest,model=a02) #one-step-ahead
 # xtable::xtable(lmtest::coeftest(a02)[,c(1,4)])
 # xtable::xtable(summary(uwarmax)$coefficients[,c(1,4)])
 quant<-.5
-order<-matrix(NA,nrow = 16, ncol = 9) 
+order<-matrix(NA,nrow = 16, ncol = 8) 
 cont<-1
 for(i in 0:3){
   for(j in 0:3){
@@ -98,7 +98,7 @@ for(i in 0:3){
     
     #ubxiiarma<-ubxiiarma.fit(ts(hum_test),ar=i,ma=i)
     
-    ugoarma<-uGoarma.fit(hum_train,ar=i,ma=j)
+    #ugoarma<-uGoarma.fit(hum_train,ar=i,ma=j) # colocar um teste lógico para ajustar os (0 0)
     
     
     barmax<-summary(BARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,
