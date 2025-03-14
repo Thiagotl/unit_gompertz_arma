@@ -134,7 +134,20 @@ ugo_best = best.ugo(y, sf = c(start = c(year,month),frequency = 12),
                         h = h1, pmax = pmax, qmax = qmax,
                         nbest = 10, tau = tau, link = "logit", X = X, X_hat = X_hat)
 
+results <- list()
 
+for (i in 1:nrow(ugo_best)) {
+  
+  p_ugoarma <- ugo_best$p[i]
+  q_ugoarma <- ugo_best$q[i]
+  AIC <- ugo_best$AIC[i]
+  
+  cat("\nApplying model:", i, " (p =", p_ugoarma, ", q =", q_ugoarma, ", AIC = ",AIC,")\n")
+  
+  fit_ugoarma <- uGoarma.fit(
+    
+  )
+}
 
 
 
