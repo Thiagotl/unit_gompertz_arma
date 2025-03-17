@@ -130,6 +130,8 @@ X_hat = cbind(C_hat, S_hat, D_hat)  # Matriz de regressoras para teste
 pmax = 3
 qmax = 3
 
+#y - dados de treino 
+
 ugo_best = best.ugo(y, sf = c(start = c(year,month),frequency = 12),
                         h = h1, pmax = pmax, qmax = qmax,
                         nbest = 10, tau = tau, link = "logit", X = X, X_hat = X_hat)
@@ -144,10 +146,20 @@ for (i in 1:nrow(ugo_best)) {
   
   cat("\nApplying model:", i, " (p =", p_ugoarma, ", q =", q_ugoarma, ", AIC = ",AIC,")\n")
   
-  fit_ugoarma <- uGoarma.fit(
-    
-  )
-}
+  fit_ugoarma <- uGoarma.fit(y,
+                             ar    = p_ugoarma,
+                             ma    = q_ugoarma,
+                             tau   = tau,
+                             link  = "logit",
+                             h     = h1, 
+                             diag  = 1,
+                             X     = X, 
+                             X_hat = X_hat)
+  
+  # Exibir resultados do modelo atual
+  cat("AIC:", fit_ugoarma$aic, "\n")
+  cat("Convergência:", fit_ugoarma$conv, "\n")
+  }
 
 
 
@@ -156,8 +168,8 @@ p_ugoarma = 1:2
 q_ugoarma = 2:3
 
 fit_ugoarma = uGoarma.fit(y,
-                          ar = p_ugoarma,
-                          ma = q_ugoarma,
+                          ar = 1,
+                          ma = 3,
                           tau = tau,
                           link  = "logit",
                           h = h1, 
@@ -194,8 +206,8 @@ for (i in 1:nrow(test_data)) {
   
   # Ajustando o modelo UGOARMA a cada iteração
   fit_ugoarma = uGoarma.fit(y,
-                            ar    = 1:2,
-                            ma    = 1:2,
+                            ar    = 1,
+                            ma    = 3,
                             tau   = tau,
                             link  = "logit",
                             h     = i, 

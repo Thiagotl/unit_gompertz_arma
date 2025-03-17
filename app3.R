@@ -4,6 +4,7 @@ library(dplyr)
 library(BTSR)
 #source("ubxiiarma.fit.r")
 source("ugo_fit.R")
+source("best_ugoarma2.R")
 ######################
 ## Data preparation ##
 ######################
@@ -74,17 +75,29 @@ a01<-auto.arima(hum_train)
 new1<-Arima(hum_test,model=a01) #one-step-ahead
 #forecast(a01, h = length(hum_test))
 
-new1$fitted
+#new1$fitted
 a02<-auto.arima(hum_train, xreg = X)
 new2<-Arima(hum_test,xreg = Xtest,model=a02) #one-step-ahead
 # lmtest::coeftest(a02)
 # xtable::xtable(lmtest::coeftest(a02)[,c(1,4)])
 # xtable::xtable(summary(uwarmax)$coefficients[,c(1,4)])
-quant<-.5
+
+quant<-.5 # quantil
+# matrix de resultados
 order<-matrix(NA,nrow = 16, ncol = 8) 
 cont<-1
+
+colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", 
+                   "uwarma.AIC", "barmax.AIC", "karmax.AIC",
+                   "uwarmax.AIC")
+
+
 for(i in 0:3){
   for(j in 0:3){
+    
+    #ugoarma<-uGoarma.fit(hum_train, ar = ar, ma = ma)
+    
+    
     barma<-summary(BARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,
                                report=F))
     karma1<-suppressWarnings(KARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,
@@ -97,10 +110,7 @@ for(i in 0:3){
     uwarma<-summary(uwarma1)
     
     #ubxiiarma<-ubxiiarma.fit(ts(hum_test),ar=i,ma=i)
-    
-    #ugoarma<-uGoarma.fit(hum_train,ar=i,ma=j) # colocar um teste lógico para ajustar os (0 0)
-    
-    
+   
     barmax<-summary(BARFIMA.fit(hum_train,p=i,d=F,q=j,info=T,
                                 xreg = X,
                                 report=F))
@@ -116,12 +126,25 @@ for(i in 0:3){
     if(karma1$convergence==1 || is.nan(karma$aic)==1) karma$aic=0
     if(karmax1$convergence==1 || is.nan(karmax$aic)==1) karmax$aic=0
     if(uwarmax1$convergence==1 || is.nan(uwarmax$aic)==1) uwarmax$aic=0
-    #   print(c(karma1$convergence,karma$aic))
+    # print(c(karma1$convergence,karma$aic))
     order[cont,]<-c(i,j,barma$aic,karma$aic,uwarma$aic,
-                    barmax$aic,karmax$aic,uwarmax$aic,ugoarma$aic)
+                    barmax$aic,karmax$aic,uwarmax$aic)
     cont<-cont+1
+    
   }
 }
+
+
+source("best_ugoarma2.R")
+y<-hum_train
+
+pmax = 3
+qmax = 3
+
+teste<-best_ugo_2(hum_train, pmax = pmax, qmax = qmax,
+                  nbest = 8)
+
+
 order<-order[-1,]
 print(order)
 
