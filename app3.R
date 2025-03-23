@@ -171,7 +171,13 @@ karmax<-KARFIMA.fit(hum_train,p=orkarmax[1],d=F,q=orkarmax[2],rho=quant,
 uwarmax<-UWARFIMA.fit(hum_train,p=oruwarmax[1],d=F,q=oruwarmax[2],rho=quant,
                       # control = list(method="Nelder-Mead"),
                       xreg=X,info=T,report=F)
+
+fit_ugoarma<-uGoarma.fit(hum_train, ar=3, ma=2)
+
+
+
 results_insample<-rbind(
+  forecast::accuracy(fit_ugoarma$fitted, hum_train),
   forecast::accuracy(barmax$fitted.values, hum_train),
   forecast::accuracy(karmax$fitted.values, hum_train),
   forecast::accuracy(uwarmax$fitted.values, hum_train),
@@ -180,7 +186,23 @@ results_insample<-rbind(
   forecast::accuracy(karma$fitted.values, hum_train),
   forecast::accuracy(uwarma$fitted.values, hum_train),
   forecast::accuracy(a01$fitted, hum_train)
-)[,c(3,2,5)]
+)#[,c(3,2,5)]
+
+
+plot(hum,
+     type = "n",                    
+     xlab = "Data", ylab = "Valor",
+     main = "Série Temporal - Treino, Teste e Estimado")
+
+lines(hum, col = "blue", lwd = 2)
+#lines(hum_train, col = "black", lwd = 2)
+lines(fit_ugoarma$fitted, col = "red", lwd = 1)
+
+
+barma_out2<-BARFIMA.fit(hum_test,p=orbarma[1],d=F,q=orbarma[2],
+                        info=T,report=F)
+
+barma_out2$fitted.values
 
 barma_out<-BARFIMA.extract(yt=hum,
                            coefs = list(alpha = barma$coefficients[1], 
@@ -229,6 +251,16 @@ uwarmax_out<-UWARFIMA.extract(yt=hum,xreg = X0,rho=quant,
                                            nu = uwarmax$coefficients[(oruwarmax[1]+nX+2+oruwarmax[2])])
 )
 
+
+
+fit_ugoarma_out<-uGoarma.fit(hum_train, ar=3, ma=2, h = length(hum_test))
+fit_ugoarma_out$forecast
+
+accuracy(fit_ugoarma_out$forecast, hum_test)
+
+
+
+
 results_outsample<-rbind(
   forecast::accuracy(barmax_out$mut[(n+1):(dim(data)[1])], hum_test),
   forecast::accuracy(karmax_out$mut[(n+1):(dim(data)[1])], hum_test),
@@ -238,7 +270,7 @@ results_outsample<-rbind(
   forecast::accuracy(karma_out$mut[(n+1):(dim(data)[1])], hum_test),
   forecast::accuracy(uwarma_out$mut[(n+1):(dim(data)[1])], hum_test),
   forecast::accuracy(new1$fitted, hum_test)
-)[,c(3,2,5)]
+)#[,c(3,2,5)]
 
 row.names(results_outsample)<-
   row.names(results_insample)<-
