@@ -202,7 +202,7 @@ lines(fit_ugoarma$fitted, col = "red", lwd = 1)
 barma_out2<-BARFIMA.fit(hum_test,p=orbarma[1],d=F,q=orbarma[2],
                         info=T,report=F)
 
-barma_out2$fitted.values
+#barma_out2$fitted.values
 
 barma_out<-BARFIMA.extract(yt=hum,
                            coefs = list(alpha = barma$coefficients[1], 
@@ -251,6 +251,12 @@ uwarmax_out<-UWARFIMA.extract(yt=hum,xreg = X0,rho=quant,
                                            nu = uwarmax$coefficients[(oruwarmax[1]+nX+2+oruwarmax[2])])
 )
 
+ugoarma_out<-UWARFIMA.extract(yt=hum, rho=quant,  
+                              coefs = list(alpha = fit_ugoarma$alpha,
+                                           phi= fit_ugoarma$phi,
+                                           theta = fit_ugoarma$theta,
+                                           nu = fit_ugoarma$sigma)
+)
 
 
 fit_ugoarma_out<-uGoarma.fit(hum_train, ar=3, ma=2, h = length(hum_test))
@@ -259,9 +265,10 @@ fit_ugoarma_out$forecast
 accuracy(fit_ugoarma_out$forecast, hum_test)
 
 
-
+# se tiver sazonalidade colocar como covariavael seno ou cosseno, dummies para os meses.
 
 results_outsample<-rbind(
+  forecast::accuracy(ugoarma_out$mut[(n+1):(dim(data)[1])], hum_test),
   forecast::accuracy(barmax_out$mut[(n+1):(dim(data)[1])], hum_test),
   forecast::accuracy(karmax_out$mut[(n+1):(dim(data)[1])], hum_test),
   forecast::accuracy(uwarmax_out$mut[(n+1):(dim(data)[1])], hum_test),
@@ -272,9 +279,7 @@ results_outsample<-rbind(
   forecast::accuracy(new1$fitted, hum_test)
 )#[,c(3,2,5)]
 
-row.names(results_outsample)<-
-  row.names(results_insample)<-
-  c("BARMAX","KARMAX","UWARMAX",
+row.names(results_outsample)<-row.names(results_insample)<-c("BARMAX","KARMAX","UWARMAX",
     "ARIMAX",
     "BARMA","KARMA","UWARMA","ARIMA")
 
