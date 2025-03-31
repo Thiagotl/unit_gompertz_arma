@@ -202,6 +202,7 @@ lines(fit_ugoarma$fitted, col = "red", lwd = 1)
 barma_out2<-BARFIMA.fit(hum_test,p=orbarma[1],d=F,q=orbarma[2],
                         info=T,report=F)
 
+View(hum)
 #barma_out2$fitted.values
 
 barma_out<-BARFIMA.extract(yt=hum,
