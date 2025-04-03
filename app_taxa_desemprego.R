@@ -5,11 +5,45 @@ library(e1071)
 source("ugo_fit.R")
 source("functions.R")
 library(readxl)
+library(lubridate)
+
+
 
 
 dados <- read_excel("ipeadata[31-03-2025-03-21].xls")
 
 dados$`Taxa de desemprego`<-dados$`Taxa de desemprego`/100
+
+dados <- dados  |>
+  mutate(
+    taxa = as.numeric(gsub(",", ".", `Taxa de desemprego`)),
+    data = parse_date_time(Data, orders = "ym")
+  ) |>
+  mutate(
+    crise_politica = if_else(data >= ymd("2015-01-01") & data <= ymd("2017-03-01"), 1, 0),
+    pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-12-01"), 1, 0)
+  )
+
+dados$data <- as.Date(parse_date_time(dados$data, orders = "ymd"))
+
+
+
+ggplot(dados, aes(x = data, y = taxa)) +
+  geom_line(color = "black") +
+  
+  annotate("rect", xmin = as.Date("2015-01-01"), xmax = as.Date("2017-03-01"), #2015-12-01,  2016-12-01
+           ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.3) +
+  
+  annotate("rect", xmin = as.Date("2020-03-01"), xmax = as.Date("2022-12-01"),
+           ymin = -Inf, ymax = Inf, fill = "orange", alpha = 0.3) +
+  
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  
+  labs(title = "Taxa de Desemprego no Brasil (2012–2025)",
+       x = "Ano", y = "Taxa de Desemprego (%)") +
+  theme_minimal()
+
+
 #View(dados)
 
 # SERIE COMPLETA
@@ -30,24 +64,11 @@ raiz_unit(Y)
 #sazonalidade(Y)
 
 
-# Tendencia Temporal
-C = 1:length(y_train) # sequencia de 1 até o o tamanho da serie de treinamento
-C_hat = (n+1):(n+h1) # sequencia numerica para o periodo de testes - previsao
 
-# #Sazonalidade Deterministica
-#
-# C = cos(2*pi*t/12)  # Componente cosenoidal para treino
-# C_hat = cos(2*pi*t_hat/12)  # Componente cosenoidal para teste
+#### Matrizes de regressores ----
 
-# C = 12*(sin(2*pi*(t)/156))
-# C_hat = 12*(sin(2*pi*(t_hat)/156))
-
-# S = sin(2*pi*t/12)  # Componente senoidal para treino
-# S_hat = sin(2*pi*t_hat/12)  # Componente senoidal para teste
-
-
-X = cbind(C)   # Matriz de regressoras para treino
-X_hat = cbind(C_hat)  # Matriz de regressoras para teste
+X = cbind(C)   
+X_hat = cbind(C_hat)  
 
 
 a01<-auto.arima(y_train)
@@ -171,79 +192,6 @@ rownames(results_insample)<-c("UGOARMA","BARMAX","KARMAX","a02",
 
 checkresiduals(a02$residuals)
 
-# 
-# barma_out<-BARFIMA.extract(yt=hum,
-#                            coefs = list(alpha = barma$coefficients[1],
-#                                         phi= barma$coefficients[2:(orbarma[1]+1)],
-#                                         theta = if(orbarma[2]==0) {NULL} else{
-#                                           barma$coefficients[(orbarma[1]+2):(orbarma[1]+1+orbarma[2])]},
-#                                         nu = barma$coefficients[(orbarma[1]+2+orbarma[2])])
-# )
-# 
-# karma_out<-KARFIMA.extract(yt=hum,
-#                            coefs = list(alpha = karma$coefficients[1],
-#                                         phi= karma$coefficients[2:(orkarma[1]+1)],
-#                                         theta = if(orkarma[2]==0) {NULL} else{
-#                                           karma$coefficients[(orkarma[1]+2):(orkarma[1]+1+orkarma[2])]},
-#                                         nu = karma$coefficients[(orkarma[1]+2+orkarma[2])])
-# )
-# 
-# barmax_out<-BARFIMA.extract(yt=hum, xreg = X0,
-#                             coefs = list(alpha = barmax$coefficients[1],
-#                                          beta = barmax$coefficients[2:(nX+1)],
-#                                          phi= barmax$coefficients[(nX+2):(orbarmax[1]+nX+1)],
-#                                          theta = if(orbarmax[2]==0) {NULL} else{
-#                                            barmax$coefficients[(orbarmax[1]+(nX+2)):(orbarmax[1]+nX+1+orbarmax[2])]},
-#                                          nu = barmax$coefficients[(orbarmax[1]+(nX+2)+orbarmax[2])])
-# )
-# karmax_out<-KARFIMA.extract(yt=hum,xreg = X0,rho=quant,
-#                             coefs = list(alpha = karmax$coefficients[1],
-#                                          beta = karmax$coefficients[2:(nX+1)],
-#                                          phi= karmax$coefficients[(nX+2):(orkarmax[1]+nX+1)],
-#                                          theta = if(orkarmax[2]==0) {NULL} else{
-#                                            karmax$coefficients[(orkarmax[1]+nX+2):(orkarmax[1]+nX+1+orkarmax[2])]},
-#                                          nu = karmax$coefficients[(orkarmax[1]+nX+2+orkarmax[2])])
-# )
-# uwarmax_out<-UWARFIMA.extract(yt=hum,xreg = X0,rho=quant,
-#                               coefs = list(alpha = uwarmax$coefficients[1],
-#                                            beta = uwarmax$coefficients[2:(nX+1)],
-#                                            phi= uwarmax$coefficients[(nX+2):(oruwarmax[1]+nX+1)],
-#                                            theta = if(oruwarmax[2]==0) {NULL} else{
-#                                              uwarmax$coefficients[(oruwarmax[1]+nX+2):(oruwarmax[1]+nX+1+oruwarmax[2])]},
-#                                            nu = uwarmax$coefficients[(oruwarmax[1]+nX+2+oruwarmax[2])])
-# )
-# 
-# ugoarma_out<-UWARFIMA.extract(yt=hum, rho=quant,
-#                               coefs = list(alpha = fit_ugoarma$alpha,
-#                                            phi= fit_ugoarma$phi,
-#                                            theta = fit_ugoarma$theta,
-#                                            nu = fit_ugoarma$sigma)
-# )
-# 
-# 
-# fit_ugoarma_out<-uGoarma.fit(hum_train, ar=3, ma=2, h = length(hum_test))
-# fit_ugoarma_out$forecast
-# 
-# accuracy(fit_ugoarma_out$forecast, hum_test)
-# 
-# 
-# # se tiver sazonalidade colocar como covariavael seno ou cosseno, dummies para os meses.
-# 
-# results_outsample<-rbind(
-#   forecast::accuracy(ugoarma_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(barmax_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(karmax_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(uwarmax_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(new2$fitted, hum_test),
-#   forecast::accuracy(barma_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(karma_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(uwarma_out$mut[(n+1):(dim(data)[1])], hum_test),
-#   forecast::accuracy(new1$fitted, hum_test)
-# )#[,c(3,2,5)]
-# 
-# row.names(results_outsample)<-row.names(results_insample)<-c("BARMAX","KARMAX","UWARMAX",
-#                                                              "ARIMAX",
-#                                                              "BARMA","KARMA","UWARMA","ARIMA")
 
 
 
