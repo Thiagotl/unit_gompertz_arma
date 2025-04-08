@@ -67,6 +67,17 @@ raiz_unit(Y)
 
 #### Matrizes de regressores ----
 
+# TENDENCIA TEMPORAL 
+t = 1:length(y_train)
+t_hat = (n+1):(n+h1)
+
+C     = cos(2*pi*t/12)
+C_hat = cos(2*pi*t_hat/12)  
+
+# CRISE POLITICA 
+
+
+
 X = cbind(C)   
 X_hat = cbind(C_hat)  
 
@@ -86,7 +97,7 @@ qmax = 3
 
 y<-y_train
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                nbest = 8, X=X, X_hat = X_hat) # 1 2 
+                nbest = 8, X=X, X_hat = X_hat) # 2 2 
 
 
 
