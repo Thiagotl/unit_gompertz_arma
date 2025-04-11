@@ -21,7 +21,8 @@ dados <- dados  |>
   ) |>
   mutate(
     crise_politica = if_else(data >= ymd("2015-01-01") & data <= ymd("2017-03-01"), 1, 0),
-    pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-12-01"), 1, 0)
+    pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-03-01"), 1, 0),
+    gov_bolsonaro = if_else(data >= ymd("2019-01-01") & data <= ymd("2022-12-31"), 1, 0)
   )
 
 dados$data <- as.Date(parse_date_time(dados$data, orders = "ymd"))
@@ -32,10 +33,13 @@ ggplot(dados, aes(x = data, y = taxa)) +
   geom_line(color = "black") +
   
   annotate("rect", xmin = as.Date("2015-01-01"), xmax = as.Date("2017-03-01"), #2015-12-01,  2016-12-01
-           ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.3) +
+           ymin = -Inf, ymax = Inf, fill = "blue", alpha = 0.3) +
   
-  annotate("rect", xmin = as.Date("2020-03-01"), xmax = as.Date("2022-12-01"),
-           ymin = -Inf, ymax = Inf, fill = "orange", alpha = 0.3) +
+  annotate("rect", xmin = as.Date("2019-01-01"), xmax = as.Date("2022-12-31"),
+           ymin = -Inf, ymax = Inf, fill = "green", alpha = 0.3) +
+  
+  annotate("rect", xmin = as.Date("2020-03-01"), xmax = as.Date("2022-03-01"),
+           ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.3) +
   
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   
@@ -63,8 +67,6 @@ y_test<-Y[(n+1):m]
 raiz_unit(Y)
 #sazonalidade(Y)
 
-
-
 #### Matrizes de regressores ----
 
 # TENDENCIA TEMPORAL 
@@ -76,10 +78,16 @@ C_hat = cos(2*pi*t_hat/12)
 
 # CRISE POLITICA 
 
+crise<-dados$crise_politica[1:144]
+crise_hat<-dados$crise_politica[145:156]
+
+gov_bolsonaro <- dados$gov_bolsonaro[1:144]
+gov_bolsonaro_hat <- dados$gov_bolsonaro[145:156]
+
+X = cbind(C, crise,gov_bolsonaro)   
+X_hat = cbind(C_hat, crise_hat, gov_bolsonaro_hat)  
 
 
-X = cbind(C)   
-X_hat = cbind(C_hat)  
 
 
 a01<-auto.arima(y_train)
@@ -97,14 +105,14 @@ qmax = 3
 
 y<-y_train
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                nbest = 8, X=X, X_hat = X_hat) # 2 2 
+                nbest = 8, X=X, X_hat = X_hat) # 1 2 
 
 
 
-#fit_ugoarma<-uGoarma.fit(y_train, ar=1, ma=1:2, X=X, X_hat=X_hat)
+fit_ugoarma<-uGoarma.fit(y_train, ar=1, ma=1:2, X=X, X_hat=X_hat)
 
 
-#checkresiduals(fit_ugoarma$residuals)
+checkresiduals(fit_ugoarma$residuals)
 
 #fit_ugoarma<-uGoarma.fit(y_train, ar=c(1,2,4,5), ma=c(2,12), X=X, X_hat=X_hat)
 
@@ -184,9 +192,6 @@ karmax<-KARFIMA.fit(y_train,p=orkarmax[1],d=F,q=orkarmax[2],rho=quant,
                     xreg=X,info=T,report=F)
 
 
-
-
-
 results_insample<-rbind(
   forecast::accuracy(fit_ugoarma$fitted, y_train),
   forecast::accuracy(barmax$fitted.values, y_train),
@@ -203,12 +208,22 @@ rownames(results_insample)<-c("UGOARMA","BARMAX","KARMAX","a02",
 
 checkresiduals(a02$residuals)
 
+### out-of-sample
+
+barma_out<-BARFIMA.extract(yt=Y,
+                           coefs = list(alpha = barma$coefficients[1], 
+                                        phi= barma$coefficients[2:(orbarma[1]+1)], 
+                                        theta = if(orbarma[2]==0) {NULL} else{
+                                          barma$coefficients[(orbarma[1]+2):(orbarma[1]+1+orbarma[2])]},
+                                        nu = barma$coefficients[(orbarma[1]+2+orbarma[2])]))
 
 
-
-
-
-
+karma_out<-KARFIMA.extract(yt=Y,
+                           coefs = list(alpha = karma$coefficients[1], 
+                                        phi= karma$coefficients[2:(orkarma[1]+1)],
+                                        theta = if(orkarma[2]==0) {NULL} else{
+                                          karma$coefficients[(orkarma[1]+2):(orkarma[1]+1+orkarma[2])]},
+                                        nu = karma$coefficients[(orkarma[1]+2+orkarma[2])]))
 
 
 
