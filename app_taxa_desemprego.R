@@ -54,7 +54,7 @@ ggplot(dados, aes(x = data, y = taxa)) +
 Y<-ts(dados$`Taxa de desemprego`, start = c(2012,3), frequency = 12)
 
 m<-length(Y)
-h1 <- 12
+h1 <- 10
 n<-m-h1
 
 # SERIE DE TREINO
@@ -78,11 +78,11 @@ C_hat = cos(2*pi*t_hat/12)
 
 # CRISE POLITICA 
 
-crise<-dados$crise_politica[1:144]
-crise_hat<-dados$crise_politica[145:156]
+crise<-dados$crise_politica[1:length(y_train)]
+crise_hat<-dados$crise_politica[length(y_train)+1:length(y_test)]
 
-gov_bolsonaro <- dados$gov_bolsonaro[1:144]
-gov_bolsonaro_hat <- dados$gov_bolsonaro[145:156]
+gov_bolsonaro <- dados$gov_bolsonaro[1:length(y_train)]
+gov_bolsonaro_hat <- dados$gov_bolsonaro[length(y_train)+1:length(y_test)]
 
 X = cbind(C, crise,gov_bolsonaro)   
 X_hat = cbind(C_hat, crise_hat, gov_bolsonaro_hat)  
@@ -251,31 +251,35 @@ ugoarma_out<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
                                            karmax$coefficients[(orkarmax[1]+nX+2):(orkarmax[1]+nX+1+orkarmax[2])]},
                                          nu = karmax$coefficients[(orkarmax[1]+nX+2+orkarmax[2])]))
 
-ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,  
-                             coefs = list())
+ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
+                             coefs = list(alpha=fit_ugoarma$coeff[1],
+                                          beta=fit_ugoarma$coeff[2:4],
+                                          phi=fit_ugoarma$coeff[5],
+                                          theta=fit_ugoarma$coeff[6:7],
+                                          nu=fit_ugoarma$coeff[8]))
 
 
 
 
 
 
-
+a<-n+1:length(y_test)
 
 
 results_outsample<-rbind(
-  forecast::accuracy(barmax_out$mut[(n+1):, ),
-  forecast::accuracy(karmax_out$mut[(n+1):, ),
-  forecast::accuracy(new2$fitted, ),
-  forecast::accuracy(barma_out$mut[(n+1):, ),
-  forecast::accuracy(karma_out$mut[(n+1):, ),
-    forecast::accuracy(new1$fitted, )
+  forecast::accuracy(ugoarma_out2$mut[(n+1):length(y_test)],y_test),
+  forecast::accuracy(barmax_out$mut[(n+1):length(y_test)],y_test ),
+  forecast::accuracy(karmax_out$mut[(n+1):length(y_test)],y_test ),
+  forecast::accuracy(new2$fitted,y_test),
+  forecast::accuracy(barma_out$mut[(n+1):length(y_test)],y_test ),
+  forecast::accuracy(karma_out$mut[(n+1)]:length(y_test), y_test),
+  forecast::accuracy(new1$fitted, y_test)
 )[,c(3,2,5)]
-
+# 
 row.names(results_outsample)<-
   row.names(results_insample)<-
-  c("BARMAX","KARMAX","",
-    "ARIMAX",
-    "BARMA","KARMA","","ARIMA")
+  c("UGO","BARMAX","KARMAX","ARIMAX",
+    "BARMA","KARMA","ARIMA")
 
 xtable::xtable((results_outsample),digits=4)
 
