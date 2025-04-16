@@ -87,8 +87,8 @@ gov_bolsonaro_hat <- dados$gov_bolsonaro[145:156]
 X = cbind(C, crise,gov_bolsonaro)   
 X_hat = cbind(C_hat, crise_hat, gov_bolsonaro_hat)  
 
-
-
+nX=dim(X)[2]
+X0<-rbind(X,X_hat)
 
 a01<-auto.arima(y_train)
 new1<-Arima(y_test,model=a01) #one-step-ahead
@@ -226,6 +226,33 @@ karma_out<-KARFIMA.extract(yt=Y,
                                         nu = karma$coefficients[(orkarma[1]+2+orkarma[2])]))
 
 
+barmax_out<-BARFIMA.extract(yt=Y, xreg = X0,  
+                            coefs = list(alpha = barmax$coefficients[1], 
+                                         beta = barmax$coefficients[2:(nX+1)],
+                                         phi= barmax$coefficients[(nX+2):(orbarmax[1]+nX+1)], 
+                                         theta = if(orbarmax[2]==0) {NULL} else{
+                                           barmax$coefficients[(orbarmax[1]+(nX+2)):(orbarmax[1]+nX+1+orbarmax[2])]},
+                                         nu = barmax$coefficients[(orbarmax[1]+(nX+2)+orbarmax[2])]))
+
+
+karmax_out<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,  
+                            coefs = list(alpha = karmax$coefficients[1], 
+                                         beta = karmax$coefficients[2:(nX+1)],
+                                         phi= karmax$coefficients[(nX+2):(orkarmax[1]+nX+1)], 
+                                         theta = if(orkarmax[2]==0) {NULL} else{
+                                           karmax$coefficients[(orkarmax[1]+nX+2):(orkarmax[1]+nX+1+orkarmax[2])]},
+                                         nu = karmax$coefficients[(orkarmax[1]+nX+2+orkarmax[2])]))
+
+ugoarma_out<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,  
+                            coefs = list(alpha = karmax$coefficients[1], 
+                                         beta = karmax$coefficients[2:(nX+1)],
+                                         phi= karmax$coefficients[(nX+2):(orkarmax[1]+nX+1)], 
+                                         theta = if(orkarmax[2]==0) {NULL} else{
+                                           karmax$coefficients[(orkarmax[1]+nX+2):(orkarmax[1]+nX+1+orkarmax[2])]},
+                                         nu = karmax$coefficients[(orkarmax[1]+nX+2+orkarmax[2])]))
+
+ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,  
+                             coefs = list())
 
 
 
@@ -235,5 +262,23 @@ karma_out<-KARFIMA.extract(yt=Y,
 
 
 
+results_outsample<-rbind(
+  forecast::accuracy(barmax_out$mut[(n+1):, ),
+  forecast::accuracy(karmax_out$mut[(n+1):, ),
+  forecast::accuracy(new2$fitted, ),
+  forecast::accuracy(barma_out$mut[(n+1):, ),
+  forecast::accuracy(karma_out$mut[(n+1):, ),
+    forecast::accuracy(new1$fitted, )
+)[,c(3,2,5)]
+
+row.names(results_outsample)<-
+  row.names(results_insample)<-
+  c("BARMAX","KARMAX","",
+    "ARIMAX",
+    "BARMA","KARMA","","ARIMA")
+
+xtable::xtable((results_outsample),digits=4)
+
+round(results_outsample[,1:2],4)
 
 
