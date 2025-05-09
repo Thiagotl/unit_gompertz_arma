@@ -12,8 +12,11 @@ library(lmtest)
 rm(list = ls())
 gc()
 
-dados1 <- read_excel("STP-20250509110327181.xlsx",
-                                    na = "-")
+
+
+
+# dados1 <- read_excel("STP-20250509110327181.xlsx",
+#                                     na = "-")
 
 
 # dados1 <- read_excel("STP-20250509110748585.xlsx",
@@ -22,8 +25,32 @@ dados1 <- read_excel("STP-20250509110327181.xlsx",
 #                                                   "numeric", "numeric"))
 
 
+# dados1<- read_excel("STP-20250509151027434.xlsx", 
+#                                     na = "-")
 
-dados<-na.omit(dados1[2])/100
+#dados1 <- read_excel("STP-20250509152940542.xlsx", 
+#                                    na = "-")
+# dados1 <- read_excel("STP-20250509154422553.xlsx", 
+#                                     na = "-")
+#dados1<- read_excel("STP-20250509160743592.xlsx", na = "-")
+
+# dados1 <- read_excel("STP-20250509162633772.xlsx", 
+#                                     na = "-")
+
+
+# dados1 <- read_excel("STP-20250509165838749.xlsx", 
+#                                     na = "-")
+
+
+#dados1 <- read_excel("STP-20250509171131887.xlsx", 
+#                                    na = "-")
+
+dados1 <- read_excel("STP-20250509172238961.xlsx", 
+                                    na = "-")
+
+
+
+dados<-na.omit(dados1[10])/100
 
 
 
@@ -72,7 +99,7 @@ dados<-na.omit(dados1[2])/100
 Y<-ts(dados, frequency = 12)
 
 m<-length(Y)
-h1 <- 12
+h1 <- 6
 n<-m-h1
 
 # SERIE DE TREINO
@@ -248,7 +275,8 @@ barma_out<-BARFIMA.extract(yt=Y,
                                         phi= barma$coefficients[2:(orbarma[1]+1)], 
                                         theta = if(orbarma[2]==0) {NULL} else{
                                           barma$coefficients[(orbarma[1]+2):(orbarma[1]+1+orbarma[2])]},
-                                        nu = barma$coefficients[(orbarma[1]+2+orbarma[2])]))
+                                        nu = barma$coefficients[(orbarma[1]+2+orbarma[2])])
+                           )
 
 
 karma_out<-KARFIMA.extract(yt=Y,
