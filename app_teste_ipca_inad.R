@@ -1,86 +1,39 @@
+#library(sidrar)
 library(forecast)
 library(BTSR)
 library(tidyverse)
 library(e1071)
 source("ugo_fit.R")
-source("functions.R")
+#source("functions.R")
 library(readxl)
 library(lubridate)
 library(lmtest)
 
-
-rm(list = ls())
-gc()
-
-
-# DADOS EM GERAL ------
-
-### TAXA DESEMPREGO ITÁLIA
-
-#dados1 <- read_excel("STP-20250509110327181.xlsx",na = "-")
-
-
-# TAXA INADIMPLENCIA 
-
-#dados1<- read_excel("STP-20250509151027434.xlsx",  na = "-")
-
-#dados1<- read_excel("STP-20250509160743592.xlsx", na = "-")
-
-# dados1 <- read_excel("STP-20250509172238961.xlsx", na = "-")
-
-# TAXA DE JUROS 
-dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
-
-
-
-
-
-
-
-dados<-na.omit(dados1[10])/100
-
-
-
-
-# dados <- read_excel("ipeadata[31-03-2025-03-21].xls")
+# ipca <- get_sidra(api = "/t/1737/n1/1/v/63/p/200401-202505")  # v/63 = Variação mensal do IPCA
 # 
-# dados$`Taxa de desemprego`<-dados$`Taxa de desemprego`/100
-# 
-# dados <- dados  |>
-#   mutate(
-#     taxa = as.numeric(gsub(",", ".", `Taxa de desemprego`)),
-#     data = parse_date_time(Data, orders = "ym")
-#   ) |>
-#   mutate(
-#     crise_politica = if_else(data >= ymd("2015-01-01") & data <= ymd("2017-03-01"), 1, 0),
-#     pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-03-01"), 1, 0),
-#     gov_bolsonaro = if_else(data >= ymd("2019-01-01") & data <= ymd("2022-12-31"), 1, 0)
-#   )
-# 
-# dados$data <- as.Date(parse_date_time(dados$data, orders = "ymd"))
-# 
-
-# 
-# ggplot(dados, aes(x = data, y = taxa)) +
-#   geom_line(color = "black") +
-#   
-#   annotate("rect", xmin = as.Date("2015-01-01"), xmax = as.Date("2017-03-01"), #2015-12-01,  2016-12-01
-#            ymin = -Inf, ymax = Inf, fill = "blue", alpha = 0.3) +
-#   
-#   annotate("rect", xmin = as.Date("2019-01-01"), xmax = as.Date("2022-12-31"),
-#            ymin = -Inf, ymax = Inf, fill = "green", alpha = 0.3) +
-#   
-#   annotate("rect", xmin = as.Date("2020-03-01"), xmax = as.Date("2022-03-01"),
-#            ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.3) +
-#   
-#   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-#   
-#   labs(title = "Taxa de Desemprego no Brasil (2012–2025)",
-#        x = "Ano", y = "Taxa de Desemprego (%)") +
-#   theme_minimal()
+# # Limpar dados
+# library(dplyr)
+# ipca_brasil <- ipca %>%
+#   select(`Mês (Código)`, Valor) %>%
+#   rename(data = `Mês (Código)`, ipca = Valor)
 
 
-#View(dados)
+#ipca_brasil<-ipca_brasil[1:255,]
+
+selic <- read_excel("selic_2001_2025.xlsx")
+
+
+
+dados1<- read_excel("STP-20250509160743592.xlsx", na = "-")
+
+selic<-selic[,2]
+
+names(selic)[names(selic) == "4390 - Taxa de juros - Selic acumulada no m�s - % a.m."] <- "taxa"
+
+
+
+
+dados<-na.omit(dados1[4])/100
 
 # SERIE COMPLETA
 Y<-ts(dados, frequency = 12)
@@ -105,26 +58,17 @@ y_test<-Y[(n+1):m]
 t = 1:length(y_train)
 t_hat = (n+1):(n+h1)
 
-
-#C = 0.001*cos(2*pi*t/84)+mean(y_train)
-# plot.ts(cbind(y_train,C),plot.type = "single")
-
 C     = cos(2*pi*t/12)
 C_hat = cos(2*pi*t_hat/12)  
 
-# # CRISE POLITICA 
-# 
-# crise<-dados$crise_politica[1:length(y_train)]
-# crise_hat<-dados$crise_politica[length(y_train)+1:length(y_test)]
-# 
-# gov_bolsonaro <- dados$gov_bolsonaro[1:length(y_train)]
-# gov_bolsonaro_hat <- dados$gov_bolsonaro[length(y_train)+1:length(y_test)]
-# 
-# X = cbind(C, crise,gov_bolsonaro)   
-# X_hat = cbind(C_hat, crise_hat, gov_bolsonaro_hat)  
 
-X=as.matrix(C)
-X_hat=as.matrix(C_hat)
+
+selic_train = selic$taxa[1:length(y_train)]
+selic_hat = selic$taxa[length(selic_train)+1:length(y_test)]
+
+
+X=as.matrix(cbind(C,selic_train))
+X_hat=as.matrix(cbind(C_hat,selic_hat))
 
 nX=dim(X)[2]
 X0<-rbind(X,X_hat)
@@ -143,10 +87,8 @@ pmax = 3
 qmax = 3
 
 y<-y_train
-
-# AJUSTE COM REGRESSÃO -----
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                nbest = 8, X=X, X_hat = X_hat) # 1 2 
+                         nbest = 8, X=X, X_hat = X_hat) 
 
 
 if(best_ugoarma$q[1]==0){
@@ -156,18 +98,15 @@ if(best_ugoarma$q[1]==0){
 }
 
 
-
-
-# AJUSTE SEM REGRESSÃO -------
-
 best_ugoarma_sr<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
                             nbest = 8) 
+
 
 if(best_ugoarma_sr$q[1]==0){
   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=NA )
 }else{
   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=1:best_ugoarma_sr$q[1] )
-  }
+}
 
 
 
@@ -196,13 +135,13 @@ for(i in 0:3){
                                          control = list(method="Nelder-Mead",stopcr=1e-2),
                                          report=F))
     karma<-summary(karma1)
-   
+    
     
     barmax<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                 start = list(phi = rep(0,i),
                                              theta = rep(0,j),
                                              beta = coef(lm(y_train~X+0))
-                                             ),
+                                ),
                                 control = list(method="Nelder-Mead",stopcr=1e-2),
                                 xreg = X,
                                 report=F))
@@ -212,10 +151,10 @@ for(i in 0:3){
                                           control = list(method="Nelder-Mead",stopcr=1e-2),
                                           report=F))
     karmax<-summary(karmax1)
-
+    
     if(karma1$convergence==1 || is.nan(karma$aic)==1) karma$aic=0
     if(karmax1$convergence==1 || is.nan(karmax$aic)==1) karmax$aic=0
-
+    
     order[cont,]<-c(i,j,barma$aic,karma$aic,
                     barmax$aic,karmax$aic)
     cont<-cont+1
@@ -272,7 +211,7 @@ barma_out<-BARFIMA.extract(yt=Y,
                                         theta = if(orbarma[2]==0) {NULL} else{
                                           barma$coefficients[(orbarma[1]+2):(orbarma[1]+1+orbarma[2])]},
                                         nu = barma$coefficients[(orbarma[1]+2+orbarma[2])])
-                           )
+)
 
 
 karma_out<-KARFIMA.extract(yt=Y,
@@ -281,7 +220,7 @@ karma_out<-KARFIMA.extract(yt=Y,
                                         theta = if(orkarma[2]==0) {NULL} else{
                                           karma$coefficients[(orkarma[1]+2):(orkarma[1]+1+orkarma[2])]},
                                         nu = karma$coefficients[(orkarma[1]+2+orkarma[2])])
-                           )
+)
 
 
 barmax_out<-BARFIMA.extract(yt=Y, xreg = X0,  
@@ -303,21 +242,6 @@ karmax_out<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
 
 
 
-
-
-# FORA DA AMOSTRA SEM REGRESSÃO ------
-
-ugoarma_out1<-KARFIMA.extract(yt=Y,rho=quant,
-                              coefs = list(alpha=fit_ugoarma_sr$coeff[1],
-                                           phi=fit_ugoarma_sr$coeff[2:(best_ugoarma_sr$p[1]+1)],
-                                           theta=if(best_ugoarma_sr$q[1]==0){NULL}
-                                           else{fit_ugoarma_sr$coeff[(best_ugoarma_sr$p[1]+2):(best_ugoarma_sr$p[1]+1+best_ugoarma_sr$q[1])]},
-                                           nu=fit_ugoarma_sr$coeff[(best_ugoarma_sr$p[1]+2+best_ugoarma_sr$q[1])])
-                              )
-
-
-# FORA DA AMOSTRA COM REGRESSÃO ------
-
 ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
                               coefs = list(alpha=fit_ugoarma$coeff[1],
                                            beta=fit_ugoarma$coeff[2:(nX+1)],
@@ -328,8 +252,13 @@ ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
 )
 
 
-
-
+ugoarma_out1<-KARFIMA.extract(yt=Y,rho=quant,
+                              coefs = list(alpha=fit_ugoarma_sr$coeff[1],
+                                           phi=fit_ugoarma_sr$coeff[2:(best_ugoarma_sr$p[1]+1)],
+                                           theta=if(best_ugoarma_sr$q[1]==0){NULL}
+                                           else{fit_ugoarma_sr$coeff[(best_ugoarma_sr$p[1]+2):(best_ugoarma_sr$p[1]+1+best_ugoarma_sr$q[1])]},
+                                           nu=fit_ugoarma_sr$coeff[(best_ugoarma_sr$p[1]+2+best_ugoarma_sr$q[1])])
+)
 
 
 
@@ -361,20 +290,17 @@ print(round(results_outsample,4))
 
 
 
-checkresiduals(fit_ugoarma$residuals)
-
-hist(fit_ugoarma$residuals)
-
-Box.test(fit_ugoarma$residuals, lag = 10, type = "Ljung-Box")
-
-shapiro.test(fit_ugoarma$residuals)
-
-library(nortest)
-ad.test(fit_ugoarma$residuals)
 
 
 
-which(fit_ugoarma$residuals < -3)
-acf(fit_ugoarma$residuals)
 
-#checkresiduals(karmax$residuals)
+
+
+
+
+
+
+
+
+
+
