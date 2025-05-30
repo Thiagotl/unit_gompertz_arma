@@ -8,14 +8,14 @@
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
-alpha = 1
-phi = 0.2 #AR
-theta = 0.4 #MA
-sigma = 6
-tau = 0.5
-true_values = c(1, 0.2, 0.4, 6) # alpha, phi, theta, sigma / phi= 0.2
-vn = c(70,150, 300, 500,1000) # 70,150, 300, 500
-R = 300
+alpha = -0.14
+phi =  0.94     #0.2 #AR
+theta = 0.10  # 0.4 #MA
+sigma = 25   #6
+tau =  0.5   #0.5
+true_values = c(-0.14, 0.94, 0.10, 24.59 ) # alpha, phi, theta, sigma / phi= 0.2
+vn = c(70,150, 300, 500, 1000) # 70,150, 300, 500
+R = 10000
 z = 1.96
 
 ar1=1
@@ -100,7 +100,7 @@ system.time({
 })  
 
 
-#end_time <- Sys.time()
+end_time <- Sys.time()
 
 # Calcula e imprime o tempo total de execução
 execution_time <- end_time - start_time

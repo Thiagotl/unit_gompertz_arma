@@ -22,9 +22,9 @@ library(lmtest)
 
 selic <- read_excel("selic_2001_2025.xlsx")
 
+dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
 
 
-dados1<- read_excel("STP-20250509160743592.xlsx", na = "-")
 
 selic<-selic[,2]
 
@@ -33,7 +33,7 @@ names(selic)[names(selic) == "4390 - Taxa de juros - Selic acumulada no m�s - 
 
 
 
-dados<-na.omit(dados1[4])/100
+dados<-na.omit(dados1[10])/100
 
 # SERIE COMPLETA
 Y<-ts(dados, frequency = 12)

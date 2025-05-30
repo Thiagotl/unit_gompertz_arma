@@ -12,120 +12,63 @@ library(lmtest)
 rm(list = ls())
 gc()
 
-
-# DADOS EM GERAL ------
-
-### TAXA DESEMPREGO ITÁLIA
-
-#dados1 <- read_excel("STP-20250509110327181.xlsx",na = "-")
-
-
-# TAXA INADIMPLENCIA 
-
-#dados1<- read_excel("STP-20250509151027434.xlsx",  na = "-")
-
-#dados1<- read_excel("STP-20250509160743592.xlsx", na = "-")
-
-#dados1 <- read_excel("STP-20250509172238961.xlsx", na = "-")
-
-# TAXA DE JUROS 
+# DADOS ----
 dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
+dados <- na.omit(dados1[4])/100
 
-#dados1 <- read_excel("STP-20250509160743592.xlsx", na = "-")
+# Criar coluna de datas reais
+datas <- seq(as.Date("2011-03-01"), by = "month", length.out = nrow(dados))
+dados <- dados %>% mutate(data = datas)
 
+# Dummies estruturais
+dados <- dados %>%
+  mutate(
+    crise_politica = if_else(data >= ymd("2015-01-01") & data <= ymd("2017-03-01"), 1, 0),
+    pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-03-01"), 1, 0),
+    gov_bolsonaro = if_else(data >= ymd("2019-01-01") & data <= ymd("2022-12-31"), 1, 0)
+  )
 
-
-dados<-na.omit(dados1[4])/100
-
-
-
-
-# dados <- read_excel("ipeadata[31-03-2025-03-21].xls")
-# 
-# dados$`Taxa de desemprego`<-dados$`Taxa de desemprego`/100
-# 
-# dados <- dados  |>
-#   mutate(
-#     taxa = as.numeric(gsub(",", ".", `Taxa de desemprego`)),
-#     data = parse_date_time(Data, orders = "ym")
-#   ) |>
-#   mutate(
-#     crise_politica = if_else(data >= ymd("2015-01-01") & data <= ymd("2017-03-01"), 1, 0),
-#     pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-03-01"), 1, 0),
-#     gov_bolsonaro = if_else(data >= ymd("2019-01-01") & data <= ymd("2022-12-31"), 1, 0)
-#   )
-# 
-# dados$data <- as.Date(parse_date_time(dados$data, orders = "ymd"))
-# 
-
-# 
-# ggplot(dados, aes(x = data, y = taxa)) +
-#   geom_line(color = "black") +
-#   
-#   annotate("rect", xmin = as.Date("2015-01-01"), xmax = as.Date("2017-03-01"), #2015-12-01,  2016-12-01
-#            ymin = -Inf, ymax = Inf, fill = "blue", alpha = 0.3) +
-#   
-#   annotate("rect", xmin = as.Date("2019-01-01"), xmax = as.Date("2022-12-31"),
-#            ymin = -Inf, ymax = Inf, fill = "green", alpha = 0.3) +
-#   
-#   annotate("rect", xmin = as.Date("2020-03-01"), xmax = as.Date("2022-03-01"),
-#            ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.3) +
-#   
-#   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-#   
-#   labs(title = "Taxa de Desemprego no Brasil (2012–2025)",
-#        x = "Ano", y = "Taxa de Desemprego (%)") +
-#   theme_minimal()
-
-
-#View(dados)
-
-# SERIE COMPLETA
-Y<-ts(dados,frequency = 12)
-
-m<-length(Y)
+# SÉRIE TEMPORAL ----
+Y <- ts(dados[[1]], start = c(2011, 3), frequency = 12)
+m <- length(Y)
 h1 <- 6
-n<-m-h1
-
-# SERIE DE TREINO
-y_train<-ts(Y[1:n], frequency = 12)
-
-# SERIE DE TESTE 
-y_test<-Y[(n+1):m] 
-
-#tend_determ(Y)
-#raiz_unit(Y)
-#sazonalidade(Y)
-
-#### Matrizes de regressores ----
+n <- m - h1
 
 
-t = 1:length(y_train)
-t_hat = (n+1):(n+h1)
+
+y_train <- ts(Y[1:n], frequency = 12)
+y_test <- Y[(n+1):m]
+
+t <- 1:length(y_train)
+t_hat <- (n+1):(n+h1)
+
+C <- cos(2*pi*t/12)
+C_hat <- cos(2*pi*t_hat/12)
+
+# Dummies
+# crise <- dados$crise_politica[1:n]
+# crise_hat <- dados$crise_politica[(n+1):m]
+
+# bolsonaro <- dados$gov_bolsonaro[1:n]
+# bolsonaro_hat <- dados$gov_bolsonaro[(n+1):m]
+
+pandemia <- dados$pandemia_covid[1:n]
+pandemia_hat <- dados$pandemia_covid[(n+1):m]
+
+# Outliers identificados
+# outliers <- matrix(0, nrow = length(y_train), ncol = 2)
+# outliers[108, 1] <- 1
+# outliers[110, 2] <- 1
+# outliers_hat <- matrix(0, nrow = length(y_test), ncol = 2)
+
+# Matriz de regressão
+X <- cbind(C,  pandemia)
+X_hat <- cbind(C_hat, pandemia_hat)
+
+nX <- dim(X)[2]
+X0 <- rbind(X, X_hat)
 
 
-#C 1= 0.001*cos(2*pi*t/12)+mean(y_train)
-#plot.ts(cbind(y_train,C),plot.type = "single")
-
-C     = cos(2*pi*t/12)
-C_hat = cos(2*pi*t_hat/12)  
-
-# # CRISE POLITICA 
-# 
-# crise<-dados$crise_politica[1:length(y_train)]
-# crise_hat<-dados$crise_politica[length(y_train)+1:length(y_test)]
-# 
-# gov_bolsonaro <- dados$gov_bolsonaro[1:length(y_train)]
-# gov_bolsonaro_hat <- dados$gov_bolsonaro[length(y_train)+1:length(y_test)]
-# 
-# X = cbind(C, crise,gov_bolsonaro)   
-# X_hat = cbind(C_hat, crise_hat, gov_bolsonaro_hat)  
-
-X=as.matrix(C)
-X_hat=as.matrix(C_hat)
-
-nX=dim(X)[2]
-X0<-rbind(X,X_hat)
 
 a01<-auto.arima(y_train, seasonal=F)
 new1<-Arima(y_test,model=a01) #one-step-ahead
@@ -144,7 +87,7 @@ y<-y_train
 
 # AJUSTE COM REGRESSÃO -----
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                nbest = 8, X=X, X_hat = X_hat) 
+                         nbest = 8, X=X, X_hat = X_hat) # 1 2 
 
 
 if(best_ugoarma$q[1]==0){
@@ -165,7 +108,7 @@ if(best_ugoarma_sr$q[1]==0){
   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=NA )
 }else{
   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=1:best_ugoarma_sr$q[1] )
-  }
+}
 
 
 
@@ -194,13 +137,13 @@ for(i in 0:3){
                                          control = list(method="Nelder-Mead",stopcr=1e-2),
                                          report=F))
     karma<-summary(karma1)
-   
+    
     
     barmax<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                 start = list(phi = rep(0,i),
                                              theta = rep(0,j),
                                              beta = coef(lm(y_train~X+0))
-                                             ),
+                                ),
                                 control = list(method="Nelder-Mead",stopcr=1e-2),
                                 xreg = X,
                                 report=F))
@@ -210,10 +153,10 @@ for(i in 0:3){
                                           control = list(method="Nelder-Mead",stopcr=1e-2),
                                           report=F))
     karmax<-summary(karmax1)
-
+    
     if(karma1$convergence==1 || is.nan(karma$aic)==1) karma$aic=0
     if(karmax1$convergence==1 || is.nan(karmax$aic)==1) karmax$aic=0
-
+    
     order[cont,]<-c(i,j,barma$aic,karma$aic,
                     barmax$aic,karmax$aic)
     cont<-cont+1
@@ -252,7 +195,7 @@ results_insample<-rbind(
   forecast::accuracy(barma$fitted.values, y_train),
   forecast::accuracy(karma$fitted.values, y_train),
   forecast::accuracy(a01$fitted, y_train)
-)[,c(3,2,5)]
+)#[,c(3,2,5)]
 
 rownames(results_insample)<-c("UGOARMA","BARMAX","KARMAX","a02",
                               "BARMA", "KARMA", "a01")
@@ -270,7 +213,7 @@ barma_out<-BARFIMA.extract(yt=Y,
                                         theta = if(orbarma[2]==0) {NULL} else{
                                           barma$coefficients[(orbarma[1]+2):(orbarma[1]+1+orbarma[2])]},
                                         nu = barma$coefficients[(orbarma[1]+2+orbarma[2])])
-                           )
+)
 
 
 karma_out<-KARFIMA.extract(yt=Y,
@@ -279,7 +222,7 @@ karma_out<-KARFIMA.extract(yt=Y,
                                         theta = if(orkarma[2]==0) {NULL} else{
                                           karma$coefficients[(orkarma[1]+2):(orkarma[1]+1+orkarma[2])]},
                                         nu = karma$coefficients[(orkarma[1]+2+orkarma[2])])
-                           )
+)
 
 
 barmax_out<-BARFIMA.extract(yt=Y, xreg = X0,  
@@ -311,7 +254,7 @@ ugoarma_out1<-KARFIMA.extract(yt=Y,rho=quant,
                                            theta=if(best_ugoarma_sr$q[1]==0){NULL}
                                            else{fit_ugoarma_sr$coeff[(best_ugoarma_sr$p[1]+2):(best_ugoarma_sr$p[1]+1+best_ugoarma_sr$q[1])]},
                                            nu=fit_ugoarma_sr$coeff[(best_ugoarma_sr$p[1]+2+best_ugoarma_sr$q[1])])
-                              )
+)
 
 
 # FORA DA AMOSTRA COM REGRESSÃO ------
@@ -348,128 +291,31 @@ results_outsample<-rbind(
   forecast::accuracy(new1$fitted, y_test)
 )[,c(3,2,5)]
 # 
-
-
-names_rows<-c("UGOMAX","BARMAX","KARMAX","ARIMAX",
-              "UGO","BARMA","KARMA","ARIMA")
-
-
-row.names(results_outsample)<-names_rows
+row.names(results_outsample)<-
+  #row.names(results_insample)<-
+  c("UGOMAX","BARMAX","KARMAX","ARIMAX",
+    "UGO","BARMA","KARMA","ARIMA")
 
 #xtable::xtable((results_outsample),digits=4)
 
 print(round(results_outsample,4))
 
-round(results_outsample[,],4)
 
-# df_percent_diff<-sweep(sweep(results_outsample, 2, results_outsample[1, ], FUN = "-"),  
-#                        2, results_outsample[1, ], FUN = "/")*100
-# 
-# 
-# df_percent_diff<-df_percent_diff[1:4,]
-# 
-# # 
-# # df<-data.frame(values=as.vector(df_percent_diff),
-# #                model=rep(names_rows,3),
-# #                measure=rep(c("MAE","MAPE","RMSE"),4)
-# # )
-# 
-# 
-# df <- data.frame(
-#   values = as.vector(df_percent_diff),  # MAE1, MAE2, ..., RMSE1, RMSE2, ...
-#   model = rep(rownames(df_percent_diff), times = ncol(df_percent_diff)),
-#   measure = rep(colnames(df_percent_diff), each = nrow(df_percent_diff))
-# )
-# 
-# df_percent_diff
-# # Remover o ARIMAX
-# #df <- df %>% filter(model != "ARIMAX")
-# 
-# ggplot(df,
-#        aes(y = values, x = measure,
-#            fill = factor(model))
-# ) +
-#   geom_bar(stat = "identity", position = position_dodge(width = 0.9), width = 0.9) +
-#   labs(fill = "", y = "Percentage differences", x = "") +
-#   scale_fill_manual(values = c("#222222","#666666","#aaaaaa" ,"#ffffff")) +
-#   ylim(0, 850) +
-#   geom_text(aes(label = ifelse(values >= 0, 
-#                                sprintf("%.1f", values), 
-#                                sprintf("%.2f", values))),
-#             position = position_dodge(width = 0.9),
-#             fontface = "bold",
-#             vjust = ifelse(df$values >= 0, -0.3, 1.2),  # Ajuste fino para posicionamento
-#             hjust = 0.5,
-#             angle = 0,
-#             color = "black",
-#             size = 2.5) +  # Aumentei um pouco o tamanho
-#   theme(legend.position = "bottom",
-#         strip.text = element_text(face = "bold", size = 8),
-#         plot.title = element_text(face = "bold", size = 8),
-#         legend.text = element_text(face = "bold", size = 8),
-#         legend.key.size = unit(0.3, "cm"),
-#         legend.spacing.x = unit(0.3, 'cm'),
-#         legend.margin = margin(t = -13, unit = "pt"),
-#         axis.title.y = element_text(face = "bold", color = "black", size = 8),
-#         axis.title.x = element_text(face = "bold", color = "black", size = 8),
-#         axis.text.x = element_text(face = "bold", color = "black", size = 8),
-#         axis.text.y = element_text(face = "bold", color = "black", size = 8),
-#         panel.background = element_rect(fill = "white", colour = "white"))
-# 
 
-#checkresiduals(fit_ugoarma$residuals)
+checkresiduals(fit_ugoarma$residuals)
 
-#hist(fit_ugoarma$residuals)
+hist(fit_ugoarma$residuals)
 
-#Box.test(fit_ugoarma$residuals, lag = 20, type = "Ljung-Box", fitdf = best_ugoarma$p[1]+best_ugoarma$q[2])
+#Box.test(fit_ugoarma$residuals, lag = 1, type = "Ljung-Box")
 
-#shapiro.test(fit_ugoarma$residuals)
+shapiro.test(fit_ugoarma$residuals)
 
 # library(nortest)
 # ad.test(fit_ugoarma$residuals)
 
 
-
 #which(fit_ugoarma$residuals < -3)
 
+#time(y_train)[c(108, 110)]
 
 
-
-
-#RESIDUALS 
-
-
-# acf<-ggAcf(fit_ugoarma$residuals) +
-#   ggtitle(NULL) +  # remove título
-#   theme_bw() +     # fundo branco
-#   theme(
-#     panel.grid.major = element_blank(),  # remove grade maior
-#     panel.grid.minor = element_blank(),  # remove grade menor
-#     plot.title = element_blank(),        # garante título removido
-#     panel.border = element_rect(color = "black", fill = NA)
-#   )
-# 
-# pacf<-ggPacf(fit_ugoarma$residuals) +
-#   ggtitle(NULL) +
-#   ylab("Partial ACF") +
-#   theme_bw() +
-#   theme(
-#     panel.grid.major = element_blank(),
-#     panel.grid.minor = element_blank(),
-#     plot.title = element_blank(),
-#     panel.border = element_rect(color = "black", fill = NA)
-#   )
-
-
-
-
-round(fit_ugoarma$model,4)
-
-
-round(karmax_out$coefs,4)
-
-coeftest()
-
-
-
-barmax_out
