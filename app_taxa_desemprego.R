@@ -239,6 +239,12 @@ karma<-KARFIMA.fit(y_train,p=orkarma[1],d=F,q=orkarma[2],rho=quant,
 
 barmax<-BARFIMA.fit(y_train,p=orbarmax[1],d=F,q=orbarmax[2],
                     xreg=X,info=T,report=F)
+orbarmax[2]<-0
+orbarmax[1]<-1
+barmax<-BARFIMA.fit(y_train,p=1,d=F,xreg=X,info=T,report=F)
+#
+#
+#
 karmax<-KARFIMA.fit(y_train,p=orkarmax[1],d=F,q=orkarmax[2],rho=quant,
                     control = list(method="Nelder-Mead",stopcr=1e-2),
                     xreg=X,info=T,report=F)
@@ -362,13 +368,13 @@ print(round(results_outsample,4))
 
 round(results_outsample[,],4)
 
-# df_percent_diff<-sweep(sweep(results_outsample, 2, results_outsample[1, ], FUN = "-"),  
+# df_percent_diff<-sweep(sweep(results_outsample, 2, results_outsample[1, ], FUN = "-"),
 #                        2, results_outsample[1, ], FUN = "/")*100
 # 
 # 
 # df_percent_diff<-df_percent_diff[1:4,]
 # 
-# # 
+# #
 # # df<-data.frame(values=as.vector(df_percent_diff),
 # #                model=rep(names_rows,3),
 # #                measure=rep(c("MAE","MAPE","RMSE"),4)
@@ -393,8 +399,8 @@ round(results_outsample[,],4)
 #   labs(fill = "", y = "Percentage differences", x = "") +
 #   scale_fill_manual(values = c("#222222","#666666","#aaaaaa" ,"#ffffff")) +
 #   ylim(0, 850) +
-#   geom_text(aes(label = ifelse(values >= 0, 
-#                                sprintf("%.1f", values), 
+#   geom_text(aes(label = ifelse(values >= 0,
+#                                sprintf("%.1f", values),
 #                                sprintf("%.2f", values))),
 #             position = position_dodge(width = 0.9),
 #             fontface = "bold",
@@ -415,18 +421,6 @@ round(results_outsample[,],4)
 #         axis.text.x = element_text(face = "bold", color = "black", size = 8),
 #         axis.text.y = element_text(face = "bold", color = "black", size = 8),
 #         panel.background = element_rect(fill = "white", colour = "white"))
-# 
-
-#checkresiduals(fit_ugoarma$residuals)
-
-#hist(fit_ugoarma$residuals)
-
-#Box.test(fit_ugoarma$residuals, lag = 20, type = "Ljung-Box", fitdf = best_ugoarma$p[1]+best_ugoarma$q[2])
-
-#shapiro.test(fit_ugoarma$residuals)
-
-# library(nortest)
-# ad.test(fit_ugoarma$residuals)
 
 
 
@@ -446,7 +440,9 @@ round(results_outsample[,],4)
 #     panel.grid.major = element_blank(),  # remove grade maior
 #     panel.grid.minor = element_blank(),  # remove grade menor
 #     plot.title = element_blank(),        # garante título removido
-#     panel.border = element_rect(color = "black", fill = NA)
+#     panel.border = element_rect(color = "black", fill = NA),
+#     axis.text.x = element_text(size = 14),
+#     axis.text.y = element_text(size = 14)
 #   )
 # 
 # pacf<-ggPacf(fit_ugoarma$residuals) +
@@ -457,19 +453,59 @@ round(results_outsample[,],4)
 #     panel.grid.major = element_blank(),
 #     panel.grid.minor = element_blank(),
 #     plot.title = element_blank(),
-#     panel.border = element_rect(color = "black", fill = NA)
+#     panel.border = element_rect(color = "black", fill = NA),
+#     axis.text.x = element_text(size = 14),
+#     axis.text.y = element_text(size = 14)
 #   )
 
 
 
-
-round(fit_ugoarma$model,4)
-
-
-round(karmax_out$coefs,4)
-
-coeftest()
-
+# round(fit_ugoarma$model,4)
+# 
+# 
+# round(karmax_out$coefs,4)
+# 
+# coeftest()
 
 
-barmax_out
+yt <- as.vector(t(ugoarma_out2$yt))
+mut <- ugoarma_out2$mut
+
+
+burn_in <- 6  # ajuste conforme o modelo
+mut_aligned <- c(rep(NA, burn_in), mut[(burn_in + 1):length(mut)])
+
+time <- seq(as.Date("2011-03-01"), by = "month", length.out = length(yt))
+
+
+df_obs <- data.frame(
+  Time = time,
+  Value = yt,
+  Type = "Observed data"
+)
+
+df_pred <- data.frame(
+  Time = time,
+  Value = mut_aligned,
+  Type = "Predicted Median"
+)
+
+df_plot <- bind_rows(df_obs, df_pred)
+
+ggplot(df_plot, aes(x = Time, y = Value, color = Type, linetype = Type)) +
+  geom_line(size = 0.6) +
+  scale_color_manual(values = c("Observed data" = "black", "Predicted Median" = "#D2042D")) + #D2042D , "#0047AB
+  scale_linetype_manual(values = c("Observed data" = "solid", "Predicted Median" = "dashed")) +
+  labs(x = "Time", y = "Rate of credit operations") +
+  scale_x_date(date_breaks = "2 year", date_labels = "%Y")+
+  theme_minimal(base_size = 12) +
+  theme(legend.title = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
+        axis.text.x = element_text(size = 14, color = "black"),
+        axis.text.y = element_text(size = 14, color = "black")
+        )
+
+
+

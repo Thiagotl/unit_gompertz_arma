@@ -16,12 +16,12 @@ library(readxl)
 #dados1 <- read_excel("STP-20250509110327181.xlsx",na = "-")
 
 
-#dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
+dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
 
 
 dados<-na.omit(dados1[4])/100
 
-Y<-ts(dados, frequency = 12)
+Y<-ts(dados, start = c(2011,3), end = c(2025,3),frequency = 12)
 
 plot(decompose(Y))
 title(main = "") 
@@ -36,14 +36,16 @@ decomp <- decompose(Y)
 
 dec<-autoplot(decomp) +
   theme_bw() +  # fundo branco
+  labs(x = "Time")+
   theme(
     panel.grid.major = element_blank(),  # remove grade principal
     panel.grid.minor = element_blank(),  # remove grade secundária
     strip.background = element_blank(),  # remove fundo da faixa dos títulos
-    strip.text = element_text(size = 14) # aumenta texto dos títulos
-  )
+    strip.text = element_text(size = 12),# aumenta texto dos títulos
+    axis.text.x = element_text(size = 12)  
+    )
 
-saz<-monthplot(Y, ylab = "")
+saz<-monthplot(Y, ylab = "Rate of credit operations")
 
 
 acf<-ggAcf(Y) +
@@ -53,7 +55,9 @@ acf<-ggAcf(Y) +
     panel.grid.major = element_blank(),  # remove grade maior
     panel.grid.minor = element_blank(),  # remove grade menor
     plot.title = element_blank(),        # garante título removido
-    panel.border = element_rect(color = "black", fill = NA)
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
   )
 
 pacf<-ggPacf(Y) +
@@ -64,7 +68,9 @@ pacf<-ggPacf(Y) +
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     plot.title = element_blank(),
-    panel.border = element_rect(color = "black", fill = NA)
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
   )
 
 
