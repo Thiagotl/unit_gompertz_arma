@@ -8,44 +8,36 @@ library(readxl)
 library(lubridate)
 library(lmtest)
 
-rm(list = ls())
-gc()
+# rm(list = ls())
+# gc()
 
 # DATASETS ------
 
-# TAXA INADIMPLENCIA 
-
-#dados1<- read_excel("STP-20250509151027434.xlsx",  na = "-")
-
-#dados1<- read_excel("STP-20250509160743592.xlsx", na = "-")
-
-#dados1 <- read_excel("STP-20250509172238961.xlsx", na = "-")
-
-# TAXA DE JUROS 
+# INTEREST RATE
 dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
 
 #dados1 <- read_excel("STP-20250509160743592.xlsx", na = "-")
 
 dados<-na.omit(dados1[4])/100
 
-# SERIE COMPLETA
+# SERIE 
 Y<-ts(dados,frequency = 12)
 
 m<-length(Y)
 h1 <- 6
 n<-m-h1
 
-# SERIE DE TREINO
+# TRAIN SERIE
 y_train<-ts(Y[1:n], frequency = 12)
 
-# SERIE DE TESTE 
+# TEST SERIE
 y_test<-Y[(n+1):m] 
 
 #tend_determ(Y)
 #raiz_unit(Y)
 #sazonalidade(Y)
 
-#### Matrizes de regressores ----
+#### REGRESSORS MATRIX ----
 
 
 t = 1:length(y_train)
@@ -67,7 +59,7 @@ a02<-auto.arima(y_train, xreg = X, seasonal=F)
 new2<-Arima(y_test,xreg = X_hat,model=a02) #one-step-ahead
 
 
-#### APLICACAO MELHOR MODELO UGO ARMA----
+#### BEST MODEL UGO ARMA----
 source("best_ugoarma2.R")
 
 pmax = 3
@@ -75,7 +67,7 @@ qmax = 3
 
 y<-y_train
 
-# AJUSTE COM REGRESSÃO -----
+# FIT WITH REGRESSORS -----
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
                 nbest = 8, X=X, X_hat = X_hat) 
 
@@ -89,7 +81,7 @@ if(best_ugoarma$q[1]==0){
 
 
 
-# AJUSTE SEM REGRESSÃO -------
+# FIT WITHOUT REGRESSORS -------
 
 best_ugoarma_sr<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
                             nbest = 8) 
@@ -100,11 +92,7 @@ if(best_ugoarma_sr$q[1]==0){
   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=1:best_ugoarma_sr$q[1] )
   }
 
-
-
-
-
-#### APLICACAO BETA E KW---- 
+#### BETA E KW APPLICATION ---- 
 
 quant<-.5 # quantil
 # matrix deresiduals# matrix de resultados
@@ -175,9 +163,6 @@ barmax<-BARFIMA.fit(y_train,p=orbarmax[1],d=F,q=orbarmax[2],
 orbarmax[2]<-0
 orbarmax[1]<-1
 barmax<-BARFIMA.fit(y_train,p=1,d=F,xreg=X,info=T,report=F)
-#
-#
-#
 karmax<-KARFIMA.fit(y_train,p=orkarmax[1],d=F,q=orkarmax[2],rho=quant,
                     control = list(method="Nelder-Mead",stopcr=1e-2),
                     xreg=X,info=T,report=F)
@@ -265,16 +250,7 @@ ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
 )
 
 
-
-
-
-
-
 a<-n+1:length(y_test)
-
-
-
-
 
 results_outsample<-rbind(
   forecast::accuracy(ugoarma_out2$mut[(n+1):length(y_test)],y_test),
