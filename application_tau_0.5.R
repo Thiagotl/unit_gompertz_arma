@@ -8,17 +8,10 @@ library(readxl)
 library(lubridate)
 library(lmtest)
 
-
 rm(list = ls())
 gc()
 
-
-# DADOS EM GERAL ------
-
-### TAXA DESEMPREGO ITÁLIA
-
-#dados1 <- read_excel("STP-20250509110327181.xlsx",na = "-")
-
+# DATASETS ------
 
 # TAXA INADIMPLENCIA 
 
@@ -33,52 +26,7 @@ dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
 
 #dados1 <- read_excel("STP-20250509160743592.xlsx", na = "-")
 
-
-
 dados<-na.omit(dados1[4])/100
-
-
-
-
-# dados <- read_excel("ipeadata[31-03-2025-03-21].xls")
-# 
-# dados$`Taxa de desemprego`<-dados$`Taxa de desemprego`/100
-# 
-# dados <- dados  |>
-#   mutate(
-#     taxa = as.numeric(gsub(",", ".", `Taxa de desemprego`)),
-#     data = parse_date_time(Data, orders = "ym")
-#   ) |>
-#   mutate(
-#     crise_politica = if_else(data >= ymd("2015-01-01") & data <= ymd("2017-03-01"), 1, 0),
-#     pandemia_covid = if_else(data >= ymd("2020-03-01") & data <= ymd("2022-03-01"), 1, 0),
-#     gov_bolsonaro = if_else(data >= ymd("2019-01-01") & data <= ymd("2022-12-31"), 1, 0)
-#   )
-# 
-# dados$data <- as.Date(parse_date_time(dados$data, orders = "ymd"))
-# 
-
-# 
-# ggplot(dados, aes(x = data, y = taxa)) +
-#   geom_line(color = "black") +
-#   
-#   annotate("rect", xmin = as.Date("2015-01-01"), xmax = as.Date("2017-03-01"), #2015-12-01,  2016-12-01
-#            ymin = -Inf, ymax = Inf, fill = "blue", alpha = 0.3) +
-#   
-#   annotate("rect", xmin = as.Date("2019-01-01"), xmax = as.Date("2022-12-31"),
-#            ymin = -Inf, ymax = Inf, fill = "green", alpha = 0.3) +
-#   
-#   annotate("rect", xmin = as.Date("2020-03-01"), xmax = as.Date("2022-03-01"),
-#            ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.3) +
-#   
-#   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-#   
-#   labs(title = "Taxa de Desemprego no Brasil (2012–2025)",
-#        x = "Ano", y = "Taxa de Desemprego (%)") +
-#   theme_minimal()
-
-
-#View(dados)
 
 # SERIE COMPLETA
 Y<-ts(dados,frequency = 12)
@@ -103,23 +51,8 @@ y_test<-Y[(n+1):m]
 t = 1:length(y_train)
 t_hat = (n+1):(n+h1)
 
-
-#C 1= 0.001*cos(2*pi*t/12)+mean(y_train)
-#plot.ts(cbind(y_train,C),plot.type = "single")
-
 C     = cos(2*pi*t/12)
 C_hat = cos(2*pi*t_hat/12)  
-
-# # CRISE POLITICA 
-# 
-# crise<-dados$crise_politica[1:length(y_train)]
-# crise_hat<-dados$crise_politica[length(y_train)+1:length(y_test)]
-# 
-# gov_bolsonaro <- dados$gov_bolsonaro[1:length(y_train)]
-# gov_bolsonaro_hat <- dados$gov_bolsonaro[length(y_train)+1:length(y_test)]
-# 
-# X = cbind(C, crise,gov_bolsonaro)   
-# X_hat = cbind(C_hat, crise_hat, gov_bolsonaro_hat)  
 
 X=as.matrix(C)
 X_hat=as.matrix(C_hat)
@@ -422,17 +355,9 @@ round(results_outsample[,],4)
 #         axis.text.y = element_text(face = "bold", color = "black", size = 8),
 #         panel.background = element_rect(fill = "white", colour = "white"))
 
-
-
 #which(fit_ugoarma$residuals < -3)
 
-
-
-
-
 #RESIDUALS 
-
-
 # acf<-ggAcf(fit_ugoarma$residuals) +
 #   ggtitle(NULL) +  # remove título
 #   theme_bw() +     # fundo branco
@@ -466,7 +391,6 @@ round(results_outsample[,],4)
 # round(karmax_out$coefs,4)
 # 
 # coeftest()
-
 
 yt <- as.vector(t(ugoarma_out2$yt))
 mut <- ugoarma_out2$mut
