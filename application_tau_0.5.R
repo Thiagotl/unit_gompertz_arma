@@ -79,8 +79,6 @@ if(best_ugoarma$q[1]==0){
 }
 
 
-
-
 # FIT WITHOUT REGRESSORS -------
 
 best_ugoarma_sr<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
@@ -95,7 +93,7 @@ if(best_ugoarma_sr$q[1]==0){
 #### BETA E KW APPLICATION ---- 
 
 quant<-.5 # quantil
-# matrix deresiduals# matrix de resultados
+# matrix deresiduals # matrix de resultados
 order<-matrix(NA,nrow = 16, ncol = 6) 
 cont<-1
 
@@ -142,8 +140,6 @@ for(i in 0:3){
   }
 }
 
-
-
 order<-order[-1,]
 print(order)
 
@@ -180,8 +176,6 @@ results_insample<-rbind(
 
 rownames(results_insample)<-c("UGOARMA","BARMAX","KARMAX","a02",
                               "BARMA", "KARMA", "a01")
-
-
 
 round(results_insample, 4)
 
@@ -227,7 +221,7 @@ karmax_out<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
 
 
 
-# FORA DA AMOSTRA SEM REGRESSÃO ------
+# OUT OF SAMPLE FIT WITHOUT REGRESSORS ------
 
 ugoarma_out1<-KARFIMA.extract(yt=Y,rho=quant,
                               coefs = list(alpha=fit_ugoarma_sr$coeff[1],
@@ -238,7 +232,7 @@ ugoarma_out1<-KARFIMA.extract(yt=Y,rho=quant,
                               )
 
 
-# FORA DA AMOSTRA COM REGRESSÃO ------
+# OUT OF SAMPLE FIT WITH REGRESSORS  ------
 
 ugoarma_out2<-KARFIMA.extract(yt=Y,xreg = X0,rho=quant,
                               coefs = list(alpha=fit_ugoarma$coeff[1],
@@ -368,44 +362,44 @@ round(results_outsample[,],4)
 # 
 # coeftest()
 
-yt <- as.vector(t(ugoarma_out2$yt))
-mut <- ugoarma_out2$mut
-
-
-burn_in <- 6  # ajuste conforme o modelo
-mut_aligned <- c(rep(NA, burn_in), mut[(burn_in + 1):length(mut)])
-
-time <- seq(as.Date("2011-03-01"), by = "month", length.out = length(yt))
-
-
-df_obs <- data.frame(
-  Time = time,
-  Value = yt,
-  Type = "Observed data"
-)
-
-df_pred <- data.frame(
-  Time = time,
-  Value = mut_aligned,
-  Type = "Predicted Median"
-)
-
-df_plot <- bind_rows(df_obs, df_pred)
-
-ggplot(df_plot, aes(x = Time, y = Value, color = Type, linetype = Type)) +
-  geom_line(size = 0.6) +
-  scale_color_manual(values = c("Observed data" = "black", "Predicted Median" = "#D2042D")) + #D2042D , "#0047AB
-  scale_linetype_manual(values = c("Observed data" = "solid", "Predicted Median" = "dashed")) +
-  labs(x = "Time", y = "Rate of credit operations") +
-  scale_x_date(date_breaks = "2 year", date_labels = "%Y")+
-  theme_minimal(base_size = 12) +
-  theme(legend.title = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
-        axis.text.x = element_text(size = 14, color = "black"),
-        axis.text.y = element_text(size = 14, color = "black")
-        )
+# yt <- as.vector(t(ugoarma_out2$yt))
+# mut <- ugoarma_out2$mut
+# 
+# 
+# burn_in <- 6  # ajuste conforme o modelo
+# mut_aligned <- c(rep(NA, burn_in), mut[(burn_in + 1):length(mut)])
+# 
+# time <- seq(as.Date("2011-03-01"), by = "month", length.out = length(yt))
+# 
+# 
+# df_obs <- data.frame(
+#   Time = time,
+#   Value = yt,
+#   Type = "Observed data"
+# )
+# 
+# df_pred <- data.frame(
+#   Time = time,
+#   Value = mut_aligned,
+#   Type = "Predicted Median"
+# )
+# 
+# df_plot <- bind_rows(df_obs, df_pred)
+# 
+# ggplot(df_plot, aes(x = Time, y = Value, color = Type, linetype = Type)) +
+#   geom_line(size = 0.6) +
+#   scale_color_manual(values = c("Observed data" = "black", "Predicted Median" = "#D2042D")) + #D2042D , "#0047AB
+#   scale_linetype_manual(values = c("Observed data" = "solid", "Predicted Median" = "dashed")) +
+#   labs(x = "Time", y = "Rate of credit operations") +
+#   scale_x_date(date_breaks = "2 year", date_labels = "%Y")+
+#   theme_minimal(base_size = 12) +
+#   theme(legend.title = element_blank(),
+#         panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
+#         axis.text.x = element_text(size = 14, color = "black"),
+#         axis.text.y = element_text(size = 14, color = "black")
+#         )
 
 
 
