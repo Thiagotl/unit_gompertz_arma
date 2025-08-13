@@ -99,7 +99,6 @@ cont<-1
 
 colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", "barmax.AIC", "karmax.AIC")
 
-
 for(i in 0:3){
   for(j in 0:3){
     
