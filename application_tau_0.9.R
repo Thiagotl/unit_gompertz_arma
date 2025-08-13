@@ -52,10 +52,10 @@ X_hat=as.matrix(C_hat)
 nX=dim(X)[2]
 X0<-rbind(X,X_hat)
 
-a01<-auto.arima(y_train, seasonal=F)
+a01<-auto.arima(y_train, seasonal=FALSE)
 new1<-Arima(y_test,model=a01) #one-step-ahead
 
-a02<-auto.arima(y_train, xreg = X, seasonal=F)
+a02<-auto.arima(y_train, xreg = X, seasonal=FALSE)
 new2<-Arima(y_test,xreg = X_hat,model=a02) #one-step-ahead
 
 
@@ -103,31 +103,31 @@ colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", "barmax.AIC", "karmax.AIC"
 for(i in 0:3){
   for(j in 0:3){
     
-    barma<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
+    barma<-summary(BARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
                                start = list(phi = rep(0,i),
                                             theta = rep(0,j)),
-                               report=F))
+                               report=FALSE))
     
-    karma1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
+    karma1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
                                          rho=quant,
                                          control = list(method="Nelder-Mead",stopcr=1e-2),
-                                         report=F))
+                                         report=FALSE))
     karma<-summary(karma1)
     
     
-    barmax<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
+    barmax<-summary(BARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
                                 start = list(phi = rep(0,i),
                                              theta = rep(0,j),
                                              beta = coef(lm(y_train~X+0))
                                 ),
                                 control = list(method="Nelder-Mead",stopcr=1e-2),
                                 xreg = X,
-                                report=F))
+                                report=FALSE))
     
-    karmax1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
+    karmax1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
                                           xreg = X,rho=quant,
                                           control = list(method="Nelder-Mead",stopcr=1e-2),
-                                          report=F))
+                                          report=FALSE))
     karmax<-summary(karmax1)
     
     if(karma1$convergence==1 || is.nan(karma$aic)==1) karma$aic=0
