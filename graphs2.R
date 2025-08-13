@@ -1,24 +1,24 @@
 
-graph_forcast <- function(df){
-  
-  h <- length(df)#y_test
-  
-  df_plot <- data.frame(
-    h = 1:h,
-    Actual = as.numeric(df),
-    KARMA = tail(karmax_out$mut, h),
-    UGOARMA = tail(ugoarma_out2$mut, h)
-  )
-  
-  
-  df_long <- df_plot |>
-    pivot_longer(cols = -h, names_to = "Model", values_to = "Value") |>
-    mutate(Model = recode(Model,
-                          "Actual" = "Actual Values",
-                          "UGOARMA" = "UGo-ARMA",
-                          "KARMA" = "KARMA"))
-  
-}
+# graph_forcast <- function(df){
+#   
+#   h <- length(df)#y_test
+#   
+#   df_plot <- data.frame(
+#     h = 1:h,
+#     Actual = as.numeric(df),
+#     KARMA = tail(karmax_out$mut, h),
+#     UGOARMA = tail(ugoarma_out2$mut, h)
+#   )
+#   
+#   
+#   df_long <- df_plot |>
+#     pivot_longer(cols = -h, names_to = "Model", values_to = "Value") |>
+#     mutate(Model = recode(Model,
+#                           "Actual" = "Actual Values",
+#                           "UGOARMA" = "UGo-ARMA",
+#                           "KARMA" = "KARMA"))
+#   
+# }
 
 # Horizonte de previsão
 h <- length(y_test)
