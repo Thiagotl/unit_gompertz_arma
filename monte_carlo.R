@@ -14,14 +14,14 @@ source("simu.ugoarma.R")
 source("ugo_fit.R")
 
 
-alpha <- -0.14
-phi   <-  0.94   # AR
-theta <-  0.10   # MA
-sigma <- 25      # sigma
+alpha <- 1
+phi   <-  0.2   # AR
+theta <-  0.4   # MA
+sigma <- 0.6     # sigma
 tau   <-  0.5
-true_values <- c(alpha, phi, theta, 24.59)
-vn <- c(30, 50, 70, 100)   #c(70, 150, 300, 500, 1000)
-R <- 10
+true_values <- c(alpha, phi, theta, sigma)
+vn <- c(70, 150, 300, 500, 1000)
+R <- 10000
 z <- 1.96
 ar1 <- 1
 ma1 <- 1
