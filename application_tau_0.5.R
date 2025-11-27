@@ -3,42 +3,30 @@ library(BTSR)
 library(tidyverse)
 library(e1071)
 source("ugo_fit.R")
-#source("functions.R")
-library(readxl)
 library(lubridate)
 library(lmtest)
-
-# rm(list = ls())
-# gc()
 
 # DATASETS ------
 
 # INTEREST RATE
-dados1 <- read_excel("STP-20250509171131887.xlsx", na = "-")
+dados <- readxl::read_excel("dataset.xlsx", na = "-")
 
-#dados1 <- read_excel("STP-20250509160743592.xlsx", na = "-")
-
-dados<-na.omit(dados1[4])/100
+dados<-na.omit(dados[2])/100
 
 # SERIE 
-Y<-ts(dados,frequency = 12)
+Y<-ts(dados, start = c(2011, 3), end = c(2025, 3) , frequency = 12)
 
 m<-length(Y)
 h1 <- 6
 n<-m-h1
 
 # TRAIN SERIE
-y_train<-ts(Y[1:n], frequency = 12)
+y_train<-ts(Y[1:n], start = c(2011, 3), end = c(2025, 3), frequency = 12)
 
 # TEST SERIE
 y_test<-Y[(n+1):m] 
 
-#tend_determ(Y)
-#raiz_unit(Y)
-#sazonalidade(Y)
-
 #### REGRESSORS MATRIX ----
-
 
 t = 1:length(y_train)
 t_hat = (n+1):(n+h1)
@@ -100,21 +88,32 @@ cont<-1
 colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", "barmax.AIC", "karmax.AIC")
 
 
+
+
+karma1<-suppressWarnings(KARFIMA.fit(y_train,p=2,d=F,q=1,info=T,
+                                     rho=quant,
+                                     control = list(method="Nelder-Mead",stopcr=1e-2),
+                                     report=F))
+
+
+
+
+
 for(i in 0:3){
   for(j in 0:3){
-    
+
     barma<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                start = list(phi = rep(0,i),
                                             theta = rep(0,j)),
                                report=F))
-    
+
     karma1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                          rho=quant,
                                          control = list(method="Nelder-Mead",stopcr=1e-2),
                                          report=F))
     karma<-summary(karma1)
-   
-    
+
+
     barmax<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                 start = list(phi = rep(0,i),
                                              theta = rep(0,j),
@@ -123,7 +122,7 @@ for(i in 0:3){
                                 control = list(method="Nelder-Mead",stopcr=1e-2),
                                 xreg = X,
                                 report=F))
-    
+
     karmax1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                           xreg = X,rho=quant,
                                           control = list(method="Nelder-Mead",stopcr=1e-2),
@@ -136,7 +135,7 @@ for(i in 0:3){
     order[cont,]<-c(i,j,barma$aic,karma$aic,
                     barmax$aic,karmax$aic)
     cont<-cont+1
-    
+
   }
 }
 
