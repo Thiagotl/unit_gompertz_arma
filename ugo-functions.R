@@ -1,3 +1,6 @@
+# Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br), 
+# Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br), december/2025
+
 # PROBABILITY DENSITY FUNCTION
 
 dUGo <- function(x, mu=.5, sigma=1.2, tau=.5)

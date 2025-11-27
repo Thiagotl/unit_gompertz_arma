@@ -1,6 +1,5 @@
-
-#rm(list = ls())
-
+# Created by Thiago Tavares Lopes
+# Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br), december/2025
 
 uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1, 
                       diag = 0, X = NA, X_hat = NA)
