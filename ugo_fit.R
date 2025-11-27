@@ -1,4 +1,4 @@
-# Created by Thiago Tavares Lopes
+# Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br)
 # Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br), december/2025
 
 uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1, 
@@ -8,7 +8,8 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1,
   # adicionar o teste lógico para y
   # adicionar o teste lógico para a série temporal
   
-  z<-c()
+  z <- list() 
+  #z <- c() 
   maxit1<-50
   p <- max(ar)
   q <- max(ma)
@@ -188,28 +189,42 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1,
   
   ##############################################################################
   #ATENCAO AQUI - USO DO VETOR SCORE
-  opt<-optim(initial, loglik,
-             escore.UGoarma , #mudar aqui
-             method = "BFGS", hessian = TRUE,
-             control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
+  # - z$grad_used: "analytical", "numerical" ou "fail"
+  # - z$conv     : código de convergência do optim (0 = convergiu)
+  
+  grad_used <- "analytical"
+  
+  opt<-optim(
+    initial, loglik,
+    escore.UGoarma , #mudar aqui
+    method = "BFGS", 
+    hessian = TRUE,
+    control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
   
   
   
   if (opt$conv != 0)
   {
     warning("FUNCTION DID NOT CONVERGE WITH ANALITICAL GRADIENT!")
-    opt<-optim(initial, loglik, 
-               method = "BFGS", hessian = TRUE,
-               control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
+    opt<-optim(
+      initial, loglik, 
+      method = "BFGS", 
+      hessian = TRUE,
+      control = list(fnscale = -1, maxit = maxit1, reltol = 1e-12))
+    
     if (opt$conv != 0)
     {
       warning("FUNCTION DID NOT CONVERGE NEITHER WITH NUMERICAL GRADIENT!")
+      grad_used <- "fail"
     }else{
       warning("IT WORKS WITH NUMERICAL GRADIENT!")
+      grad_used <- "numerical"
     }
   }
   
   z$conv <- opt$conv
+  z$grad_used <- grad_used # atencao aqui
+  
   coef <- (opt$par)[1:(p1+q1+k+2)]
   alpha <- coef[1]
   if(k==0) beta=names_beta=NULL else z$beta <- coef[2:(k+1)]
@@ -410,16 +425,12 @@ uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1,
 
 
 
-# PARA TESTAR 
+# TO TESTING
 
-# set.seed(2)
-# 
-# source("simu.ugoarma.R")
-# 
-# y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
-# 
-# fit<-uGoarma.fit(y, ma=1, ar=1)
-# 
+#set.seed(2)
+#source("simu.ugoarma.R")
+#y<-simu.ugoarma(100,phi=0.2,theta=0.4, alpha=1,sigma=6, tau=0.5,freq=12,link="logit")
+#fit<-uGoarma.fit(y, ma=1, ar=1)
 # fit$model
 
 
