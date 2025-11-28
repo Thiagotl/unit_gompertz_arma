@@ -3,25 +3,16 @@ library(BTSR)
 library(tidyverse)
 library(e1071)
 source("ugo_fit.R")
-#source("functions.R")
 library(readxl)
 library(lubridate)
 library(lmtest)
-
-# rm(list = ls())
-# gc()
 
 # DATASETS ------
 
 # INTEREST RATE
 dados1 <- read_excel("dataset.xlsx", na = "-")
-
-#dados1 <- read_excel("STP-20250509160743592.xlsx", na = "-")
-
-dados<-na.omit(dados1[2])/100
-
 # SERIE 
-Y<-ts(dados,frequency = 12)
+Y<-ts(dados1[2]/100,frequency = 12)
 
 m<-length(Y)
 h1 <- 6
@@ -38,8 +29,6 @@ y_test<-Y[(n+1):m]
 #sazonalidade(Y)
 
 #### REGRESSORS MATRIX ----
-
-
 t = 1:length(y_train)
 t_hat = (n+1):(n+h1)
 
@@ -52,21 +41,11 @@ X_hat=as.matrix(C_hat)
 nX=dim(X)[2]
 X0<-rbind(X,X_hat)
 
-a01<-auto.arima(y_train, seasonal=FALSE)
-new1<-Arima(y_test,model=a01) #one-step-ahead
-
-a02<-auto.arima(y_train, xreg = X, seasonal=FALSE)
-new2<-Arima(y_test,xreg = X_hat,model=a02) #one-step-ahead
-
-
 #### BEST MODEL UGO ARMA----
 source("best_ugoarma2.R")
 
-pmax = 3
-qmax = 3
-
-y<-y_train
-
+pmax = 3; qmax = 3
+y<-y_train 
 # FIT WITH REGRESSORS -----
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
                          nbest = 8, X=X, X_hat = X_hat) 
@@ -78,22 +57,8 @@ if(best_ugoarma$q[1]==0){
   fit_ugoarma<-uGoarma.fit(y_train, ar=1:best_ugoarma$p[1], ma=1:best_ugoarma$q[1], X=X, X_hat = X_hat)
 }
 
-
-# FIT WITHOUT REGRESSORS -------
-
-best_ugoarma_sr<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                            nbest = 8) 
-
-if(best_ugoarma_sr$q[1]==0){
-  fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=NA )
-}else{
-  fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=1:best_ugoarma_sr$q[1] )
-}
-
 #### BETA E KW APPLICATION ---- 
-
-quant<-.9 # quantil
-# matrix deresiduals # matrix de resultados
+quant<-.5 # quantil
 order<-matrix(NA,nrow = 16, ncol = 6) 
 cont<-1
 
@@ -101,32 +66,20 @@ colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", "barmax.AIC", "karmax.AIC"
 
 for(i in 0:3){
   for(j in 0:3){
-    
-    barma<-summary(BARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
-                               start = list(phi = rep(0,i),
-                                            theta = rep(0,j)),
-                               report=FALSE))
-    
-    karma1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
-                                         rho=quant,
-                                         control = list(method="Nelder-Mead",stopcr=1e-2),
-                                         report=FALSE))
-    karma<-summary(karma1)
-    
-    
-    barmax<-summary(BARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
+    barmax<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                 start = list(phi = rep(0,i),
                                              theta = rep(0,j),
-                                             beta = coef(lm(y_train~X+0))
+                                             beta = coef(lm(y_train~X+0)),
+                                             nu=1
                                 ),
-                                control = list(method="Nelder-Mead",stopcr=1e-2),
+                                # control = list(method="Nelder-Mead",stopcr=1e-2),
                                 xreg = X,
-                                report=FALSE))
+                                report=F))
     
-    karmax1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
+    karmax1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                           xreg = X,rho=quant,
                                           control = list(method="Nelder-Mead",stopcr=1e-2),
-                                          report=FALSE))
+                                          report=F))
     karmax<-summary(karmax1)
     
     if(karma1$convergence==1 || is.nan(karma$aic)==1) karma$aic=0
@@ -135,7 +88,6 @@ for(i in 0:3){
     order[cont,]<-c(i,j,barma$aic,karma$aic,
                     barmax$aic,karmax$aic)
     cont<-cont+1
-    
   }
 }
 
@@ -153,7 +105,11 @@ karma<-KARFIMA.fit(y_train,p=orkarma[1],d=F,q=orkarma[2],rho=quant,
                    control = list(method="Nelder-Mead",stopcr=1e-2),
                    info=T,report=F)
 
-barmax<-BARFIMA.fit(y_train,p=orbarmax[1],d=F,q=orbarmax[2],
+barmax<-BARFIMA.fit(y_train,p=1,d=F,q=0,
+                    start = list(phi = rep(0.3,1),
+                                 beta = coef(lm(y_train~X+0)),
+                                 nu=.1
+                    ),
                     xreg=X,info=T,report=F)
 orbarmax[2]<-0
 orbarmax[1]<-1
@@ -258,7 +214,7 @@ results_outsample<-rbind(
 # 
 
 
-names_rows<-c("UGOMAX","BARMAX","KARMAX","ARIMAX", 
+names_rows<-c("UGOMAX","BARMAX","KARMAX","ARIMAX",
               "UGO","BARMA","KARMA","ARIMA")
 
 
@@ -269,136 +225,3 @@ row.names(results_outsample)<-names_rows
 print(round(results_outsample,4))
 
 round(results_outsample[,],4)
-
-# df_percent_diff<-sweep(sweep(results_outsample, 2, results_outsample[1, ], FUN = "-"),
-#                        2, results_outsample[1, ], FUN = "/")*100
-# 
-# 
-# df_percent_diff<-df_percent_diff[1:4,]
-# 
-# #
-# # df<-data.frame(values=as.vector(df_percent_diff),
-# #                model=rep(names_rows,3),
-# #                measure=rep(c("MAE","MAPE","RMSE"),4)
-# # )
-# 
-# 
-# df <- data.frame(
-#   values = as.vector(df_percent_diff),  # MAE1, MAE2, ..., RMSE1, RMSE2, ...
-#   model = rep(rownames(df_percent_diff), times = ncol(df_percent_diff)),
-#   measure = rep(colnames(df_percent_diff), each = nrow(df_percent_diff))
-# )
-# 
-# df_percent_diff
-# # Remover o ARIMAX
-# #df <- df %>% filter(model != "ARIMAX")
-# 
-# ggplot(df,
-#        aes(y = values, x = measure,
-#            fill = factor(model))
-# ) +
-#   geom_bar(stat = "identity", position = position_dodge(width = 0.9), width = 0.9) +
-#   labs(fill = "", y = "Percentage differences", x = "") +
-#   scale_fill_manual(values = c("#222222","#666666","#aaaaaa" ,"#ffffff")) +
-#   ylim(0, 850) +
-#   geom_text(aes(label = ifelse(values >= 0,
-#                                sprintf("%.1f", values),
-#                                sprintf("%.2f", values))),
-#             position = position_dodge(width = 0.9),
-#             fontface = "bold",
-#             vjust = ifelse(df$values >= 0, -0.3, 1.2),  # Ajuste fino para posicionamento
-#             hjust = 0.5,
-#             angle = 0,
-#             color = "black",
-#             size = 2.5) +  # Aumentei um pouco o tamanho
-#   theme(legend.position = "bottom",
-#         strip.text = element_text(face = "bold", size = 8),
-#         plot.title = element_text(face = "bold", size = 8),
-#         legend.text = element_text(face = "bold", size = 8),
-#         legend.key.size = unit(0.3, "cm"),
-#         legend.spacing.x = unit(0.3, 'cm'),
-#         legend.margin = margin(t = -13, unit = "pt"),
-#         axis.title.y = element_text(face = "bold", color = "black", size = 8),
-#         axis.title.x = element_text(face = "bold", color = "black", size = 8),
-#         axis.text.x = element_text(face = "bold", color = "black", size = 8),
-#         axis.text.y = element_text(face = "bold", color = "black", size = 8),
-#         panel.background = element_rect(fill = "white", colour = "white"))
-
-#which(fit_ugoarma$residuals < -3)
-
-#RESIDUALS 
-# acf<-ggAcf(fit_ugoarma$residuals) +
-#   ggtitle(NULL) +  # remove título
-#   theme_bw() +     # fundo branco
-#   theme(
-#     panel.grid.major = element_blank(),  # remove grade maior
-#     panel.grid.minor = element_blank(),  # remove grade menor
-#     plot.title = element_blank(),        # garante título removido
-#     panel.border = element_rect(color = "black", fill = NA),
-#     axis.text.x = element_text(size = 14),
-#     axis.text.y = element_text(size = 14)
-#   )
-# 
-# pacf<-ggPacf(fit_ugoarma$residuals) +
-#   ggtitle(NULL) +
-#   ylab("Partial ACF") +
-#   theme_bw() +
-#   theme(
-#     panel.grid.major = element_blank(),
-#     panel.grid.minor = element_blank(),
-#     plot.title = element_blank(),
-#     panel.border = element_rect(color = "black", fill = NA),
-#     axis.text.x = element_text(size = 14),
-#     axis.text.y = element_text(size = 14)
-#   )
-
-
-
-# round(fit_ugoarma$model,4)
-# 
-# 
-# round(karmax_out$coefs,4)
-# 
-# coeftest()
-
-# yt <- as.vector(t(ugoarma_out2$yt))
-# mut <- ugoarma_out2$mut
-# 
-# 
-# burn_in <- 6  # ajuste conforme o modelo
-# mut_aligned <- c(rep(NA, burn_in), mut[(burn_in + 1):length(mut)])
-# 
-# time <- seq(as.Date("2011-03-01"), by = "month", length.out = length(yt))
-# 
-# 
-# df_obs <- data.frame(
-#   Time = time,
-#   Value = yt,
-#   Type = "Observed data"
-# )
-# 
-# df_pred <- data.frame(
-#   Time = time,
-#   Value = mut_aligned,
-#   Type = "Predicted Median"
-# )
-# 
-# df_plot <- bind_rows(df_obs, df_pred)
-# 
-# ggplot(df_plot, aes(x = Time, y = Value, color = Type, linetype = Type)) +
-#   geom_line(size = 0.6) +
-#   scale_color_manual(values = c("Observed data" = "black", "Predicted Median" = "#D2042D")) + #D2042D , "#0047AB
-#   scale_linetype_manual(values = c("Observed data" = "solid", "Predicted Median" = "dashed")) +
-#   labs(x = "Time", y = "Rate of credit operations") +
-#   scale_x_date(date_breaks = "2 year", date_labels = "%Y")+
-#   theme_minimal(base_size = 12) +
-#   theme(legend.title = element_blank(),
-#         panel.grid.major = element_blank(),
-#         panel.grid.minor = element_blank(),
-#         panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
-#         axis.text.x = element_text(size = 14, color = "black"),
-#         axis.text.y = element_text(size = 14, color = "black")
-#         )
-
-
-

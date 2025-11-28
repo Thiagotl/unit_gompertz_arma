@@ -56,8 +56,34 @@ qmax = 3
 y<-y_train
 
 # FIT WITH REGRESSORS -----
+# best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
+#                 nbest = 8, X=X, X_hat = X_hat) 
+# 
+# 
+# if(best_ugoarma$q[1]==0){
+#   fit_ugoarma<-uGoarma.fit(y_train, ar=1:best_ugoarma$p[1], ma=NA, X=X, X_hat = X_hat )
+# }else{
+#   fit_ugoarma<-uGoarma.fit(y_train, ar=1:best_ugoarma$p[1], ma=1:best_ugoarma$q[1], X=X, X_hat = X_hat)
+# }
+
+
+# FIT WITHOUT REGRESSORS -------
+
+# best_ugoarma_sr<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
+#                             nbest = 8) 
+# 
+# if(best_ugoarma_sr$q[1]==0){
+#   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=NA )
+# }else{
+#   fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=1:best_ugoarma_sr$q[1] )
+#   }
+
+
+pmax = 3; qmax = 3
+y<-y_train 
+# FIT WITH REGRESSORS -----
 best_ugoarma<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                nbest = 8, X=X, X_hat = X_hat) 
+                         nbest = 8, X=X, X_hat = X_hat) 
 
 
 if(best_ugoarma$q[1]==0){
@@ -66,17 +92,6 @@ if(best_ugoarma$q[1]==0){
   fit_ugoarma<-uGoarma.fit(y_train, ar=1:best_ugoarma$p[1], ma=1:best_ugoarma$q[1], X=X, X_hat = X_hat)
 }
 
-
-# FIT WITHOUT REGRESSORS -------
-
-best_ugoarma_sr<-best_ugo_2(y_train, pmax = pmax, qmax = qmax,
-                            nbest = 8) 
-
-if(best_ugoarma_sr$q[1]==0){
-  fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=NA )
-}else{
-  fit_ugoarma_sr<-uGoarma.fit(y_train, ar=1:best_ugoarma_sr$p[1], ma=1:best_ugoarma_sr$q[1] )
-  }
 
 #### BETA E KW APPLICATION ---- 
 
@@ -92,55 +107,54 @@ colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", "barmax.AIC", "karmax.AIC"
 
 karma1<-suppressWarnings(KARFIMA.fit(y_train,p=2,d=F,q=1,info=T,
                                      rho=quant,
-                                     control = list(method="Nelder-Mead",stopcr=1e-2),
+                                     control = list(method="L-BFGS-B",stopcr=1e-2),
                                      report=F))
 
 
+#### BETA E KW APPLICATION ---- 
+quant<-.5 # quantil
+order<-matrix(NA,nrow = 16, ncol = 6) 
+cont<-1
 
-
+colnames(order)<-c("p", "q","barma.AIC", "karma.AIC", "barmax.AIC", "karmax.AIC")
 
 for(i in 0:3){
   for(j in 0:3){
-
-    barma<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
+    
+    barma<-summary(BARFIMA.fit(y_train,p=i,d=FALSE,q=j,info=TRUE,
                                start = list(phi = rep(0,i),
                                             theta = rep(0,j)),
-                               report=F))
-
-    karma1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
-                                         rho=quant,
-                                         control = list(method="Nelder-Mead",stopcr=1e-2),
-                                         report=F))
-    karma<-summary(karma1)
-
-
+                               report=FALSE))
+    
+    
     barmax<-summary(BARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                 start = list(phi = rep(0,i),
                                              theta = rep(0,j),
-                                             beta = coef(lm(y_train~X+0))
-                                             ),
-                                control = list(method="Nelder-Mead",stopcr=1e-2),
+                                             beta = coef(lm(y_train~X+0)),
+                                             nu=1
+                                ),
+                                # control = list(method="Nelder-Mead",stopcr=1e-2),
                                 xreg = X,
                                 report=F))
-
+    
     karmax1<-suppressWarnings(KARFIMA.fit(y_train,p=i,d=F,q=j,info=T,
                                           xreg = X,rho=quant,
                                           control = list(method="Nelder-Mead",stopcr=1e-2),
                                           report=F))
     karmax<-summary(karmax1)
-
+    
     if(karma1$convergence==1 || is.nan(karma$aic)==1) karma$aic=0
     if(karmax1$convergence==1 || is.nan(karmax$aic)==1) karmax$aic=0
-
+    
     order[cont,]<-c(i,j,barma$aic,karma$aic,
                     barmax$aic,karmax$aic)
     cont<-cont+1
-
   }
 }
 
 order<-order[-1,]
 print(order)
+
 
 orbarma<-order[which(order[,3]==min(order[,3])),c(1:3)]
 orkarma<-order[which(order[,4]==min(order[,4])),c(1:2,4)]
