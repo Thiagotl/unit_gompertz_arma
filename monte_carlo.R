@@ -15,10 +15,10 @@ library(parallel)
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
-alpha <- 1
-phi   <- 0.2   # AR
-theta <- 0.4   # MA
-sigma <- 0.6   # sigma
+alpha <- -0.14 #1
+phi   <- 0.94 #0.2   # AR
+theta <- 0.1 #0.4   # MA
+sigma <- 24 #0.6   # sigma
 tau   <- 0.5
 
 true_values <- c(alpha, phi, theta, sigma)
@@ -274,4 +274,4 @@ cat("Tempo total de execução:",
     round(as.numeric(execution_time, units = "secs")),
     "segundos\n")
 
-#save(MC_out, file = "MC_UGoARMA_ARMA11_MC_10k_success_parallel.RData")
+#save(MC_out, file = "MC_UGoARMA_ARMA11_MC_10k_success_parallel_2.RData")
