@@ -53,9 +53,13 @@ qmax <- 3
 y <- y_train
 
 # FIT WITH REGRESSORS -----
-best_ugoarmax <- best_ugo_2(y_train,
-  pmax = pmax, qmax = qmax,
-  nbest = 8, X = X, X_hat = X_hat
+best_ugoarmax <- best_ugo_2(
+  y_train,
+  pmax = pmax, 
+  qmax = qmax,
+  nbest = 8, 
+  X = X, 
+  X_hat = X_hat
 )
 
 
@@ -222,31 +226,31 @@ karma <- KARFIMA.fit(y_train,
   report = F
 )
 
-barmax <- BARFIMA.fit(y_train,
-  p = orbarmax[1],
+
+start_barmax <- list(
+  alpha = 0,
+  phi   = rep(0.3, orbarmax[1]),
+  theta = if (orbarmax[2] == 0) NULL else rep(0.3, orbarmax[2]),
+  beta  = coef(lm(y_train ~ X + 0)),
+  nu    = 0.01
+)
+
+
+barmax <- BARFIMA.fit(
+  y_train, 
+  p = orbarmax[1], 
   d = F,
   q = orbarmax[2],
   xreg = X,
   rho = quant,
-  start = list(
-    alpha = 0,
-    phi = rep(0.3, orbarmax[1]),
-    if (orbarmax[2] == 0){
-      NULL
-    } else{
-      theta = rep(0.3, orbarmax[2])
-    },
-    # theta = rep(0.3, 1),
-    beta = coef(lm(y_train ~ X + 0)),
-    nu = 0.01
-  ),
+  start = start_barmax,
   control = list(
     method = "Nelder-Mead",
     stopcr = 1e-2
-  ),
+    ),
   info = T,
   report = F
-)
+  )
 
 karmax <- KARFIMA.fit(y_train,
   p = orkarmax[1],
@@ -310,7 +314,6 @@ karma_out <- KARFIMA.extract(
     nu = karma$coefficients[(orkarma[1] + 2 + orkarma[2])]
   )
 )
-
 
 barmax_out <- BARFIMA.extract(
   yt = Y, xreg = X0,
