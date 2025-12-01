@@ -21,12 +21,12 @@ theta <- 0.14 #0.4   # MA
 sigma <- 13 #0.6   # sigma
 tau   <- 0.5
 
-true_values <- c(alpha, phi, theta, sigma)
+true_values <- c(alpha, theta, sigma)
 vn <- c(70, 150, 300, 500, 1000)
 R  <- 10000          
 z  <- 1.96
-ar1 <- 1
-ma1 <- 1
+ar1 <- 1 # p phi
+ma1 <- 1 # q theta
 
 
 n_cores <- max(1, detectCores() - 3)
