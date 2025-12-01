@@ -15,10 +15,10 @@ library(parallel)
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
-alpha <- -0.14 #1
-phi   <- 0.94 #0.2   # AR
-theta <- 0.1 #0.4   # MA
-sigma <- 24 #0.6   # sigma
+alpha <- 0.3 #1
+phi   <- 0.9 #0.2   # AR
+theta <- 0.14 #0.4   # MA
+sigma <- 13 #0.6   # sigma
 tau   <- 0.5
 
 true_values <- c(alpha, phi, theta, sigma)
@@ -29,7 +29,7 @@ ar1 <- 1
 ma1 <- 1
 
 
-n_cores <- max(1, detectCores() - 1)
+n_cores <- max(1, detectCores() - 3)
 
 # Object to all results for "n" 
 MC_out <- list()
