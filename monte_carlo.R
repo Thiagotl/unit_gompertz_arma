@@ -21,7 +21,7 @@ theta <- 0.14 #0.4   # MA
 sigma <- 13 #0.6   # sigma
 tau   <- 0.5
 
-true_values <- c(alpha, theta, sigma)
+true_values <- c(alpha, phi,  theta, sigma)
 vn <- c(70, 150, 300, 500, 1000)
 R  <- 10000          
 z  <- 1.96
