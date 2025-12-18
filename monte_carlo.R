@@ -15,21 +15,54 @@ library(parallel)
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
-alpha <- 0.3 #1
-phi   <- 0.9 #0.2   # AR
-theta <- 0.14 #0.4   # MA
-sigma <- 13 #0.6   # sigma
+# ------------------------------------------------------------------
+# Definição dos parâmetros verdadeiros (ajuste aqui para 1,0 ou 0,1)
+# ------------------------------------------------------------------
+alpha <- 0.3   # ex.: 1
+phi   <- 0.9   # AR (coloque NA para ARMA(0,1))
+theta <- 0.14  # MA (coloque NA para ARMA(1,0))
+sigma <- 13    # ex.: 6
 tau   <- 0.5
 
-true_values <- c(alpha, phi,  theta, sigma)
 vn <- c(70, 150, 300, 500, 1000)
 R  <- 10000          
 z  <- 1.96
-ar1 <- 1 # p phi
-ma1 <- 1 # q theta
 
+# Ordem do modelo a ser ajustado
+# ARMA(1,0): ar1 <- 1; ma1 <- NA
+# ARMA(0,1): ar1 <- NA; ma1 <- 1
+# ARMA(1,1): ar1 <- 1; ma1 <- 1
+ar1 <- 1 
+ma1 <- 1 
+
+# ------------------------------------------------------------------
+# Escolha automática de quais parâmetros entram no vetor verdadeiro
+# conforme phi/theta e ar1/ma1 (podem ser NA)
+# ------------------------------------------------------------------
+include_phi   <- !is.na(phi)   && !is.na(ar1)
+include_theta <- !is.na(theta) && !is.na(ma1)
+
+if (include_phi && include_theta) {
+  par_names   <- c("alpha", "phi", "theta", "sigma")
+  true_values <- c(alpha, phi, theta, sigma)
+} else if (include_phi && !include_theta) {
+  par_names   <- c("alpha", "phi", "sigma")
+  true_values <- c(alpha, phi, sigma)
+} else if (!include_phi && include_theta) {
+  par_names   <- c("alpha", "theta", "sigma")
+  true_values <- c(alpha, theta, sigma)
+} else {
+  par_names   <- c("alpha", "sigma")
+  true_values <- c(alpha, sigma)
+}
 
 n_cores <- max(1, detectCores() - 3)
+
+if (.Platform$OS.type == "windows") {
+  n_cores <- 1
+  message("Windows detectado: usando n_cores = 1 (mclapply paralelo não é suportado).")
+}
+
 
 # Object to all results for "n" 
 MC_out <- list()
@@ -125,7 +158,7 @@ system.time({
         if (fit1$grad_used == "numerical")  res$grad_numerical  <- 1
       }
       
-      # Estimativas e erros-padrão dos parâmetros (alpha, phi, theta, sigma)
+      # Estimativas e erros-padrão dos parâmetros
       est_i <- fit1$model[, 1]
       err_i <- fit1$model[, 2]
       
@@ -147,11 +180,30 @@ system.time({
         res$ICi <- ICi_i
         res$ICs <- ICs_i
         
-        # Cobertura para cada parâmetro
-        if (ICi_i[1] <= alpha && ICs_i[1] >= alpha) res$calpha <- 1
-        if (ICi_i[2] <= phi   && ICs_i[2] >= phi)   res$cphi   <- 1
-        if (ICi_i[3] <= theta && ICs_i[3] >= theta) res$ctheta <- 1
-        if (ICi_i[4] <= sigma && ICs_i[4] >= sigma) res$csigma <- 1
+        # Cobertura para cada parâmetro, de acordo com par_names
+        idx_alpha <- which(par_names == "alpha")
+        if (length(idx_alpha) == 1 &&
+            ICi_i[idx_alpha] <= alpha && ICs_i[idx_alpha] >= alpha) {
+          res$calpha <- 1
+        }
+        
+        idx_phi <- which(par_names == "phi")
+        if (length(idx_phi) == 1 &&
+            ICi_i[idx_phi] <= phi && ICs_i[idx_phi] >= phi) {
+          res$cphi <- 1
+        }
+        
+        idx_theta <- which(par_names == "theta")
+        if (length(idx_theta) == 1 &&
+            ICi_i[idx_theta] <= theta && ICs_i[idx_theta] >= theta) {
+          res$ctheta <- 1
+        }
+        
+        idx_sigma <- which(par_names == "sigma")
+        if (length(idx_sigma) == 1 &&
+            ICi_i[idx_sigma] <= sigma && ICs_i[idx_sigma] >= sigma) {
+          res$csigma <- 1
+        }
       }
       
       return(res)
@@ -171,9 +223,9 @@ system.time({
         attempt <- attempt + 1
         
         # contadores globais de problemas e gradiente
-        bug         <- bug         + ri$bug
-        conv_fail   <- conv_fail   + ri$conv_fail
-        error_count <- error_count + ri$error
+        bug            <- bug            + ri$bug
+        conv_fail      <- conv_fail      + ri$conv_fail
+        error_count    <- error_count    + ri$error
         grad_analytical <- grad_analytical + ri$grad_analytical
         grad_numerical  <- grad_numerical  + ri$grad_numerical
         
@@ -226,11 +278,17 @@ system.time({
     MSE <- apply(estim, 2, var, na.rm = TRUE) + bias^2
     
     # Taxa de cobertura dos ICs (TC) — SOBRE R SUCESSOS
-    TC <- c(calpha, cphi, ctheta, csigma) / R
+    TC_vec <- numeric(n_par)
+    names(TC_vec) <- par_names
     
-    results <- rbind(m, bias, biasP, erro, MSE, TC)
+    if ("alpha" %in% par_names) TC_vec[par_names == "alpha"] <- calpha / R
+    if ("phi"   %in% par_names) TC_vec[par_names == "phi"]   <- cphi   / R
+    if ("theta" %in% par_names) TC_vec[par_names == "theta"] <- ctheta / R
+    if ("sigma" %in% par_names) TC_vec[par_names == "sigma"] <- csigma / R
+    
+    results <- rbind(m, bias, biasP, erro, MSE, TC_vec)
     rownames(results) <- c("Mean", "Bias", "RB%", "SE", "MSE", "TC")
-    colnames(results) <- c("alpha", "phi", "theta", "sigma")
+    colnames(results) <- par_names
     
     cat("Tamanho da amostra:", n, "\n")
     print(round(results, 4))
@@ -274,4 +332,4 @@ cat("Tempo total de execução:",
     round(as.numeric(execution_time, units = "secs")),
     "segundos\n")
 
-#save(MC_out, file = "MC_UGoARMA_ARMA11_MC_10k_success_parallel_2.RData")
+# save(MC_out, file = "MC_UGoARMA_ARMA11_MC_10k_success_parallel_2.RData")
