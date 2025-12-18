@@ -58,12 +58,6 @@ if (include_phi && include_theta) {
 
 n_cores <- max(1, detectCores() - 3)
 
-if (.Platform$OS.type == "windows") {
-  n_cores <- 1
-  message("Windows detectado: usando n_cores = 1 (mclapply paralelo não é suportado).")
-}
-
-
 # Object to all results for "n" 
 MC_out <- list()
 
