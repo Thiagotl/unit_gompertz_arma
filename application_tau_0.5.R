@@ -34,6 +34,7 @@ t_hat = (n+1):(n+h1)
 C     = cos(2*pi*t/12)
 C_hat = cos(2*pi*t_hat/12)  
 
+
 X=as.matrix(C)
 X_hat=as.matrix(C_hat)
 
