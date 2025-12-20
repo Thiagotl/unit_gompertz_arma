@@ -446,7 +446,7 @@ uGoarma.fit <- function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1,
 }
 
 
-# TO TESTING
+# TESTING
 
 # set.seed(2)
 #source("simu.ugoarma.R")

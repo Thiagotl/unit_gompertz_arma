@@ -1,5 +1,5 @@
 ##############################################################
-# MONTE CARLO SIMULATION - UGo-ARMA(1,1) - paralelo
+# MONTE CARLO SIMULATION - UGo-ARMA(1,1) 
 #
 # Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br)
 # Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br)
@@ -7,7 +7,7 @@
 #
 ##############################################################
 
-# rm(list = ls())
+
 set.seed(123)
 
 library(parallel)
@@ -18,10 +18,10 @@ source("ugo_fit.R")
 # ------------------------------------------------------------------
 # Definição dos parâmetros verdadeiros (ajuste aqui para 1,0 ou 0,1)
 # ------------------------------------------------------------------
-alpha <- 0.3   # ex.: 1
-phi   <- 0.9   # AR (coloque NA para ARMA(0,1))
-theta <- 0.14  # MA (coloque NA para ARMA(1,0))
-sigma <- 13    # ex.: 6
+alpha <- 0.3   
+phi   <- 0.9   # AR (put NA for ARMA(0,1))
+theta <- 0.14  # MA (put NA for ARMA(1,0))
+sigma <- 13    
 tau   <- 0.5
 
 vn <- c(70, 150, 300, 500, 1000)
@@ -94,9 +94,7 @@ system.time({
     
     pb <- txtProgressBar(min = 0, max = R, style = 3)
     
-    # -----------------------------------------------------------------
-    # Função de UMA tentativa de Monte Carlo (roda em paralelo)
-    # -----------------------------------------------------------------
+    
     one_rep <- function(dummy) {
       res <- list(
         bug             = 0,
@@ -114,7 +112,6 @@ system.time({
         csigma          = 0
       )
       
-      # simula série
       y <- simu.ugoarma(
         n     = n,
         phi   = phi,
@@ -203,20 +200,15 @@ system.time({
       return(res)
     }
     
-    # -----------------------------------------------------------------
-    # LOOP PRINCIPAL EM BLOCOS PARA GARANTIR R SUCESSOS (em paralelo)
-    # -----------------------------------------------------------------
     while (success < R) {
       remaining <- R - success
       
-      # roda um bloco paralelo de "remaining" tentativas
       res_list <- mclapply(1:remaining, one_rep, mc.cores = n_cores)
       
       for (j in 1:remaining) {
         ri <- res_list[[j]]
         attempt <- attempt + 1
         
-        # contadores globais de problemas e gradiente
         bug            <- bug            + ri$bug
         conv_fail      <- conv_fail      + ri$conv_fail
         error_count    <- error_count    + ri$error
@@ -254,7 +246,6 @@ system.time({
     cat("Sucessos (convergências)                   :", success, "\n")
     cat("Bugs (falha + erro)                        :", bug, "\n\n")
     
-    # === A PARTIR DAQUI, SUCCESS = R (temos R réplicas convergidas) ===
     
     # Média das estimativas
     m <- apply(estim, 2, mean, na.rm = TRUE)
@@ -320,7 +311,6 @@ system.time({
 
 end_time <- Sys.time()
 
-# Tempo total de execução
 execution_time <- end_time - start_time
 cat("Tempo total de execução:",
     round(as.numeric(execution_time, units = "secs")),
