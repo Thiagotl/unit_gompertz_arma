@@ -1,14 +1,13 @@
-best.ugo <- function(serie, sf, h=6, pmax=6, qmax=6, nbest=8,
+best_ugo_2 <- function(y, h=6, pmax=6, qmax=6, nbest=8,
                      tau=0.5, link="logit", X=NA, X_hat=NA) {
   
   if (!exists("uGoarma.fit")) {
     source("ugo_fit.R")
   }
   
-  y <- ts(serie, start=c(sf[1], sf[2]), frequency=sf[3])
-  
   # Inicializa o critério AIC
   fit <- uGoarma.fit(y, ma=1, diag=0, link=link)
+  #fit <- uGoarma.fit(y, ma=1, diag=0, link=link, h=h, tau=tau, X=X, X_hat=X_hat)
   aicmin <- fit$aic
   
   cat("Initial AIC:", aicmin, "\n")

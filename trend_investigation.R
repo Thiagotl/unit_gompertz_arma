@@ -1,3 +1,4 @@
+rm(list = ls())
 library(BTSR)
 source("ugo_fit.R")
 
@@ -15,26 +16,20 @@ y_train <- ts(Y[1:n], frequency = 12)
 # TEST SERIES
 y_test <- Y[(n + 1):m]
 
-#### REGRESSORS MATRIX ----
+#### REGRESSORS ----
 t      <- 1:length(y_train)
 t_hat  <- (n + 1):(n + h1)
 
 C      <- cos(2 * pi * t / 12)
 C_hat  <- cos(2 * pi * t_hat / 12)
 
-X     <- cbind(cos = C)
-X_hat <- cbind(cos = C_hat)
-
-nX <- ncol(X)
-X0 <- rbind(X, X_hat)
-
 #### TREND INVESTIGATION
 ### UGOARMA
 fit_ugoarmax_trend <- uGoarma.fit(y_train, 
-                                       ar = 1, 
-                                       ma = NA, 
-                                       X = cbind(t, cos = C), 
-                                       X_hat = cbind(t_hat, X_hat)
+                                  ar = 1, 
+                                  ma = NA, 
+                                  X = cbind(C,t), 
+                                  X_hat = cbind(C_hat, t_hat)
 )
 
 ### BARMA
@@ -42,7 +37,13 @@ barmax_trend <- BARFIMA.fit(y_train,
                             p = 1,
                             d = F,
                             q = 0,
-                            xreg = cbind(t,C),
+                            xreg = cbind(C,t),
+                            start = list(
+                              alpha = 0,
+                              phi   = 0,
+                              beta  = coef(lm(y_train ~ cbind(C,t) + 0)),
+                              nu    = 1
+                            ),
                             control = list(
                               method = "Nelder-Mead",
                               stopcr = 1e-2
@@ -55,7 +56,7 @@ karmax_trend <- KARFIMA.fit(y_train,
                             p = 1,
                             d = F,
                             q = 0,
-                            xreg = cbind(t,C),
+                            xreg = cbind(C,t),
                             control = list(
                               method = "Nelder-Mead",
                               stopcr = 1e-2
@@ -65,12 +66,12 @@ karmax_trend <- KARFIMA.fit(y_train,
 ) 
 
 ### fitted values
-fit_ugoarmax_trend$model 
+fit_ugoarmax_trend$model
 summary(barmax_trend)$coeff
-summary(karmax_trend)$coeff
+summary(karmax_trend)$coeff 
 
 ugoarmax_trend_fitted <- KARFIMA.extract(
-  yt = Y, xreg = rbind(cbind(t,C),cbind(t_hat,C_hat)),
+  yt = Y, xreg = rbind(cbind(C,t),cbind(C_hat,t_hat)),
   coefs = list(
     alpha = fit_ugoarmax_trend$coeff[1],
     beta = fit_ugoarmax_trend$coeff[2:3],
@@ -81,7 +82,7 @@ ugoarmax_trend_fitted <- KARFIMA.extract(
 )
 
 barmax_trend_fitted <- BARFIMA.extract(
-  yt = Y, xreg = rbind(cbind(t,C),cbind(t_hat,C_hat)),
+  yt = Y, xreg = rbind(cbind(C,t),cbind(C_hat,t_hat)),
   coefs = list(
     alpha = barmax_trend$coefficients[1],
     beta = barmax_trend$coefficients[2:3],
@@ -92,7 +93,7 @@ barmax_trend_fitted <- BARFIMA.extract(
 )
 
 karmax_trend_fitted <- KARFIMA.extract(
-  yt = Y, xreg = rbind(cbind(t,C),cbind(t_hat,C_hat)),
+  yt = Y, xreg = rbind(cbind(C,t),cbind(C_hat,t_hat)),
   coefs = list(
     alpha = karmax_trend$coefficients[1],
     beta = karmax_trend$coefficients[2:3],
@@ -116,4 +117,4 @@ results_trend_outsample <- rbind(
 )[, c(3, 2, 5)]
 
 results_trend_insample
-results_trend_outsample
+xtable::xtable(results_trend_outsample, digits = 4)
