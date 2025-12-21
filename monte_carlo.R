@@ -15,9 +15,7 @@ library(parallel)
 source("simu.ugoarma.R")
 source("ugo_fit.R")
 
-# ------------------------------------------------------------------
-# Definição dos parâmetros verdadeiros (ajuste aqui para 1,0 ou 0,1)
-# ------------------------------------------------------------------
+
 alpha <- 0.3   
 phi   <- 0.9   # AR (put NA for ARMA(0,1))
 theta <- 0.14  # MA (put NA for ARMA(1,0))
@@ -58,7 +56,7 @@ if (include_phi && include_theta) {
 
 n_cores <- max(1, detectCores() - 3)
 
-# Object to all results for "n" 
+
 MC_out <- list()
 
 start_time <- Sys.time()
@@ -73,10 +71,8 @@ system.time({
     
     n_par <- length(true_values)
     
-    # matrizes com R linhas, que serão preenchidas apenas com réplicas bem-sucedidas
     estim <- ICi <- ICs <- err <- matrix(NA, nrow = R, ncol = n_par)
     
-    # contadores de cobertura
     calpha <- cphi <- ctheta <- csigma <- 0
     
     # contadores de problemas
@@ -123,37 +119,31 @@ system.time({
         link  = "logit"
       )
       
-      # tenta ajustar o modelo
       fit1 <- try(
         uGoarma.fit(y, ma = ma1, ar = ar1),
         silent = TRUE
       )
       
-      # erro de execução
       if (inherits(fit1, "try-error")) {
         res$bug   <- 1
         res$error <- 1
         return(res)
       }
       
-      # falha de convergência
       if (is.null(fit1$conv) || fit1$conv != 0) {
         res$bug       <- 1
         res$conv_fail <- 1
         return(res)
       }
       
-      # Se chegou aqui: CONVERGIU (conv == 0)
       if (!is.null(fit1$grad_used)) {
         if (fit1$grad_used == "analytical") res$grad_analytical <- 1
         if (fit1$grad_used == "numerical")  res$grad_numerical  <- 1
       }
       
-      # Estimativas e erros-padrão dos parâmetros
       est_i <- fit1$model[, 1]
       err_i <- fit1$model[, 2]
       
-      # segurança: se o comprimento não bater, marca como bug
       if (length(est_i) != n_par || length(err_i) != n_par) {
         res$bug   <- 1
         res$error <- 1
@@ -164,14 +154,12 @@ system.time({
       res$err   <- err_i
       
       if (!any(is.na(est_i)) && !any(is.na(err_i))) {
-        # Intervalos de confiança de 95%
         ICi_i <- est_i - (z * err_i)
         ICs_i <- est_i + (z * err_i)
         
         res$ICi <- ICi_i
         res$ICs <- ICs_i
         
-        # Cobertura para cada parâmetro, de acordo com par_names
         idx_alpha <- which(par_names == "alpha")
         if (length(idx_alpha) == 1 &&
             ICi_i[idx_alpha] <= alpha && ICs_i[idx_alpha] >= alpha) {
@@ -215,12 +203,10 @@ system.time({
         grad_analytical <- grad_analytical + ri$grad_analytical
         grad_numerical  <- grad_numerical  + ri$grad_numerical
         
-        # se houve bug/falha/erro, não conta como sucesso
         if (ri$bug == 1 || ri$conv_fail == 1 || ri$error == 1) {
           next
         }
         
-        # SUCESSO
         success <- success + 1
         i <- success
         
@@ -247,22 +233,16 @@ system.time({
     cat("Bugs (falha + erro)                        :", bug, "\n\n")
     
     
-    # Média das estimativas
     m <- apply(estim, 2, mean, na.rm = TRUE)
     
-    # Viés absoluto
     bias <- (true_values - m)
     
-    # Viés relativo percentual (RB%)
     biasP <- bias / true_values * 100
     
-    # Desvio-padrão das estimativas
     erro <- apply(estim, 2, sd, na.rm = TRUE)
     
-    # MSE = Var(est) + bias^2
     MSE <- apply(estim, 2, var, na.rm = TRUE) + bias^2
     
-    # Taxa de cobertura dos ICs (TC) — SOBRE R SUCESSOS
     TC_vec <- numeric(n_par)
     names(TC_vec) <- par_names
     
@@ -278,7 +258,6 @@ system.time({
     cat("Tamanho da amostra:", n, "\n")
     print(round(results, 4))
     
-    # Resumo das contagens de gradiente e falhas
     cat("\nResumo de convergência para n =", n, "\n")
     cat("Total de tentativas (sucesso + bug)       :", attempt,        "\n")
     cat("Sucessos (convergências)                  :", success,        "\n")
