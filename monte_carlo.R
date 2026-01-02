@@ -4,7 +4,7 @@
 # Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br)
 # Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br)
 # December/2025
-#
+# 
 ##############################################################
 
 
@@ -26,17 +26,14 @@ vn <- c(70, 150, 300, 500, 1000)
 R  <- 10000          
 z  <- 1.96
 
-# Ordem do modelo a ser ajustado
+# Order of the model to be adjusted
 # ARMA(1,0): ar1 <- 1; ma1 <- NA
 # ARMA(0,1): ar1 <- NA; ma1 <- 1
 # ARMA(1,1): ar1 <- 1; ma1 <- 1
 ar1 <- 1 
 ma1 <- 1 
 
-# ------------------------------------------------------------------
-# Escolha automática de quais parâmetros entram no vetor verdadeiro
-# conforme phi/theta e ar1/ma1 (podem ser NA)
-# ------------------------------------------------------------------
+
 include_phi   <- !is.na(phi)   && !is.na(ar1)
 include_theta <- !is.na(theta) && !is.na(ma1)
 
@@ -75,18 +72,16 @@ system.time({
     
     calpha <- cphi <- ctheta <- csigma <- 0
     
-    # contadores de problemas
+    
     bug         <- 0   # error + convergence fail 
     conv_fail   <- 0   # convergence fail (optim$conv != 0)
     error_count <- 0   # try-error 
     
-    # contadores de uso de gradiente
-    grad_analytical <- 0   # convergência com gradiente analítico (escore)
-    grad_numerical  <- 0   # convergência usando gradiente numérico
+    grad_analytical <- 0   # (escore)
+    grad_numerical  <- 0   
     
-    # contadores de réplicas
-    success <- 0          # quantas réplicas CONVERGIRAM (vai até R)
-    attempt <- 0          # quantas tentativas no total (convergidas + bugs)
+    success <- 0          
+    attempt <- 0          
     
     pb <- txtProgressBar(min = 0, max = R, style = 3)
     
@@ -276,8 +271,8 @@ system.time({
       ICi             = ICi,
       ICs             = ICs,
       results         = results,
-      R               = R,          # número de réplicas BEM SUCEDIDAS
-      attempts        = attempt,    # total de tentativas
+      R               = R,          # number of successful replicas
+      attempts        = attempt,    # total number of attempts
       bug_total       = bug,
       conv_fail       = conv_fail,
       error_count     = error_count,
