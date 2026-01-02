@@ -1,3 +1,12 @@
+##############################################################
+#
+# Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br)
+# Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br)
+# December/2025
+#
+##############################################################
+
+
 best_ugo_2 <- function(y, h=6, pmax=6, qmax=6, nbest=8,
                      tau=0.5, link="logit", X=NA, X_hat=NA) {
   

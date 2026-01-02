@@ -1,5 +1,4 @@
 ##############################################################
-# MONTE CARLO SIMULATION - UGo-ARMA(1,1) 
 #
 # Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br)
 # Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br)
