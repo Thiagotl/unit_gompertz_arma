@@ -12,7 +12,7 @@ set.seed(123)
 
 library(parallel)
 
-source("simu.ugoarma.R")
+source("auxiliary_functions/simu.ugoarma.R")
 source("ugo_fit.R")
 
 

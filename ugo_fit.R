@@ -4,7 +4,7 @@
 uGoarma.fit<-function(y, ar = NA, ma = NA, tau = .5, link = "logit", h = 1, 
                       diag = 0, X = NA, X_hat = NA, sigma.start = 1)
 {
-  source("ugo-functions.R")
+  source("auxiliary_functions/ugo-functions.R")
   # adicionar o teste lógico para y
   # adicionar o teste lógico para a série temporal
   

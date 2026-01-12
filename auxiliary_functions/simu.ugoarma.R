@@ -8,7 +8,7 @@
 simu.ugoarma <- function(n, phi = 0.2, theta = 0.4, alpha = 1, sigma = 6, 
                          tau = 0.5, freq=12, beta = 0, X = NA,
                          link="logit"){
-  source("ugo-functions.R")
+  source("auxiliary_functions/ugo-functions.R")
   
   if(any(is.na(phi)==F))
   {
