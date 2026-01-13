@@ -1,5 +1,5 @@
 ##############################################################
-# MONTE CARLO SIMULATION - UGo-ARMA(1,1) 
+# APPLICATION TAU 0.5  
 #
 # Created by Thiago Tavares Lopes (thiago.tavares@acad.ufsm.br)
 # Reviewed by Renata Rojas Guerra (renata.r.guerra@ufsm.br)
@@ -37,7 +37,7 @@ nX <- ncol(X)
 X0 <- rbind(X, X_hat)
 
 #### FITTING THE UGO ARMA----
-source("best_ugoarma.R")
+source("auxiliary_functions/best_ugoarma.R")
 
 pmax <- 3; qmax <- 3
 y <- y_train
@@ -294,49 +294,4 @@ row.names(results_outsample) <- names_rows
 print(round(results_outsample, 4))
 
 
-######################################
-### Figures 3 and 4 ###
-######################################
-# library(forecast)
-# library(ggplot2)
-# 
-# decomp <- decompose(Y)
-# 
-# dec <- autoplot(decomp) +
-#   theme_bw() +  # fundo branco
-#   labs(x = "Time")+
-#   theme(
-#     panel.grid.major = element_blank(),  # remove grade principal
-#     panel.grid.minor = element_blank(),  # remove grade secundária
-#     strip.background = element_blank(),  # remove fundo da faixa dos títulos
-#     strip.text = element_text(size = 12),# aumenta texto dos títulos
-#     axis.text.x = element_text(size = 12)  
-#   )
-# 
-# saz <- monthplot(Y, ylab = "Rate of credit operations")
-# 
-# 
-# acf <- ggAcf(Y) +
-#   ggtitle(NULL) +  # remove título
-#   theme_bw() +     # fundo branco
-#   theme(
-#     panel.grid.major = element_blank(),  # remove grade maior
-#     panel.grid.minor = element_blank(),  # remove grade menor
-#     plot.title = element_blank(),        # garante título removido
-#     panel.border = element_rect(color = "black", fill = NA),
-#     axis.text.x = element_text(size = 14),
-#     axis.text.y = element_text(size = 14)
-#   )
-# 
-# pacf <- ggPacf(Y) +
-#   ggtitle(NULL) +
-#   ylab("Partial ACF") +
-#   theme_bw() +
-#   theme(
-#     panel.grid.major = element_blank(),
-#     panel.grid.minor = element_blank(),
-#     plot.title = element_blank(),
-#     panel.border = element_rect(color = "black", fill = NA),
-#     axis.text.x = element_text(size = 14),
-#     axis.text.y = element_text(size = 14)
-#   )
+
