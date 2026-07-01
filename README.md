@@ -20,5 +20,5 @@ If you use this repository or its contents, please cite:
   volume={},
   number={},
   pages={},
-  year={202}
+  year={2025}
 }
