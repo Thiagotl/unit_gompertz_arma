@@ -297,8 +297,8 @@ cat("Tempo total de execução:",
 ## Graphs ----
 
 # n <- c(70, 150, 300, 500, 1000)
-# 
-# # RB% 
+#
+# # RB%
 # RB_11 <- c(
 #   2.1418 - 1.6174 - 1.1356 - 35.4977,
 #   0.9455 - 1.2620 - 0.4044 - 15.8120,
@@ -306,7 +306,7 @@ cat("Tempo total de execução:",
 #   0.3159 - 0.1328 - 0.1544 - 4.5298,
 #   0.2683 - 0.4293 + 0.0179 - 2.4336
 # )
-# 
+#
 # RB_10 <- c(
 #   0.0715 + 4.0607 - 32.4502,
 #   0.2713 + 1.8487 - 14.6077,
@@ -314,7 +314,7 @@ cat("Tempo total de execução:",
 #   0.0844 + 0.5235 - 4.7536,
 #   0.0114 + 0.2449 - 2.0121
 # )
-# 
+#
 # RB_01 <- c(
 #   1.9480 - 1.1779 - 23.9502,
 #   0.7053 - 0.5742 - 10.6962,
@@ -322,7 +322,7 @@ cat("Tempo total de execução:",
 #   0.1948 - 0.2722 - 3.0846,
 #   0.0361 + 0.0587 - 1.3906
 # )
-# 
+#
 # rb_tot <- tibble(
 #   n,
 #   `UGo-ARMA(1,1)` = RB_11,
@@ -330,8 +330,8 @@ cat("Tempo total de execução:",
 #   `UGo-ARMA(0,1)` = RB_01
 # ) |>
 #   pivot_longer(-n, names_to = "model", values_to = "value")
-# 
-# # MSE 
+#
+# # MSE
 # MSE_11 <- c(
 #   0.1249 + 0.0340 + 0.0328 + 0.2336,
 #   0.0555 + 0.0141 + 0.0125 + 0.0856,
@@ -339,7 +339,7 @@ cat("Tempo total de execução:",
 #   0.0162 + 0.0040 + 0.0034 + 0.0219,
 #   0.0081 + 0.0020 + 0.0017 + 0.0105
 # )
-# 
+#
 # MSE_10 <- c(
 #   0.0466 + 0.0095 + 0.2623,
 #   0.0216 + 0.0042 + 0.0994,
@@ -347,7 +347,7 @@ cat("Tempo total de execução:",
 #   0.0066 + 0.0012 + 0.0270,
 #   0.0032 + 0.0006 + 0.0131
 # )
-# 
+#
 # MSE_01 <- c(
 #   0.0468 + 0.0100 + 0.1649,
 #   0.0221 + 0.0040 + 0.0669,
@@ -355,7 +355,7 @@ cat("Tempo total de execução:",
 #   0.0067 + 0.0011 + 0.0176,
 #   0.0034 + 0.0005 + 0.0084
 # )
-# 
+#
 # mse_tot <- tibble(
 #   n,
 #   `UGo-ARMA(1,1)` = MSE_11,
@@ -363,8 +363,8 @@ cat("Tempo total de execução:",
 #   `UGo-ARMA(0,1)` = MSE_01
 # ) |>
 #   pivot_longer(-n, names_to = "model", values_to = "value")
-# 
-# 
+#
+#
 # plot_metric <- function(df, ylab, legend_pos = c(0.80, 0.25)) {
 #   ggplot(df, aes(n, value, color = model, linetype = model, shape = model)) +
 #     geom_line(linewidth = 0.9) +
@@ -386,12 +386,12 @@ cat("Tempo total de execução:",
 #       panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8)
 #     )
 # }
-# 
-# 
+#
+#
 # g_rb  <- plot_metric(rb_tot,  "Total RB%")
 # g_mse <- plot_metric(mse_tot, "Total MSE", legend_pos = c(0.80, 0.85))
-# 
-# 
+#
+#
 # g_rb
 # g_mse
 # 

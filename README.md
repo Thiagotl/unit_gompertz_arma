@@ -16,9 +16,10 @@ If you use this repository or its contents, please cite:
 @article{guerra2025ugoarma,
   title={A Unit Gompertz ARMA Model for Bounded Variables with Time-Varying Quantiles},
   author={Guerra, Renata Rojas and Pe{\~n}a-Ram{\'\i}rez, Fernando Arturo and Lopes, Thiago Tavares},
-  journal={},
-  volume={},
-  number={},
+  journal={Brazilian Journal of Probability and Statistics},
+  volume={39},
+  number={4},
   pages={},
-  year={2025}
+  year={2025},
+  Doi={10.1214/25-BJPS645}
 }
